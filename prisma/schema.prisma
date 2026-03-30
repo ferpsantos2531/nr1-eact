@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Empresa {
+  id           String      @id @default(cuid())
+  nome         String
+  cnpj         String?
+  email        String      @unique
+  telefone     String?
+  setor        String?
+  tamanho      String?
+  surveyToken  String      @unique
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  respostas    Resposta[]
+  relatorios   Relatorio[]
+}
+
+model Resposta {
+  id        String   @id @default(cuid())
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+  respostas String
+  createdAt DateTime @default(now())
+}
+
+model Relatorio {
+  id             String   @id @default(cuid())
+  empresaId      String
+  empresa        Empresa  @relation(fields: [empresaId], references: [id])
+  totalRespostas Int
+  mediaGeral     Float
+  mediaDimensao1 Float
+  mediaDimensao2 Float
+  mediaDimensao3 Float
+  categoria      String
+  planoAcaoIA    String
+  createdAt      DateTime @default(now())
+}
