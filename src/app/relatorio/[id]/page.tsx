@@ -16,7 +16,7 @@ type Relatorio = {
   categoria: Categoria
   planoAcaoIA: PlanoAcao
   createdAt: string
-  empresa: { nome: string; email: string; setor: string | null; tamanho: string | null; id: string }
+  empresa: { nome: string; email: string;  tamanho: string | null; id: string }
 }
 
 const DIM_ICONS = ["⚙️", "🏗️", "🤝"]
@@ -110,7 +110,6 @@ export default function RelatorioPage() {
           <p className="text-sm mb-1" style={{ color: "#505050" }}>Relatório de Avaliação NR-1</p>
           <h1 className="text-3xl font-black mb-2">{rel.empresa.nome}</h1>
           <p className="text-sm" style={{ color: "#9f9f9f" }}>
-            {rel.empresa.setor && `${rel.empresa.setor} · `}
             Gerado em {new Date(rel.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
             {" · "}{rel.totalRespostas} respondentes
           </p>

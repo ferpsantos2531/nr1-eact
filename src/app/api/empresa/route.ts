@@ -1,58 +1,49 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getSession } from "@/lib/auth"
 import { v4 as uuidv4 } from "uuid"
 
+// POST — adiciona nova empresa para o usuário logado
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { nome, cnpj, email, telefone, setor, tamanho } = body
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
 
-    if (!nome || !email) {
-      return NextResponse.json({ error: "Nome e email são obrigatórios" }, { status: 400 })
-    }
-
-    const existing = await prisma.empresa.findUnique({ where: { email } })
-    if (existing) {
-      return NextResponse.json(
-        { error: "Já existe uma empresa cadastrada com este email", empresaId: existing.id },
-        { status: 409 }
-      )
-    }
+    const { nome, cnpj, telefone, tamanho } = await req.json()
+    if (!nome) return NextResponse.json({ error: "Nome da empresa é obrigatório" }, { status: 400 })
 
     const empresa = await prisma.empresa.create({
-      data: { nome, cnpj: cnpj || null, email, telefone: telefone || null,
-               setor: setor || null, tamanho: tamanho || null, surveyToken: uuidv4() },
+      data: {
+        nome,
+        cnpj: cnpj || null,
+        telefone: telefone || null,
+        tamanho: tamanho || null,
+        surveyToken: uuidv4(),
+        usuarioId: session.usuarioId,
+      },
     })
 
     return NextResponse.json({ id: empresa.id, surveyToken: empresa.surveyToken })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "Erro interno ao cadastrar empresa" }, { status: 500 })
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 })
   }
 }
 
+// GET — busca empresa por id (verificando que pertence ao usuário logado)
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const id = searchParams.get("id")
-  const email = searchParams.get("email")
-
-  if (!id && !email) {
-    return NextResponse.json({ error: "Informe id ou email" }, { status: 400 })
-  }
+  if (!id) return NextResponse.json({ error: "Informe id" }, { status: 400 })
 
   try {
-    const empresa = id
-      ? await prisma.empresa.findUnique({ where: { id } })
-      : await prisma.empresa.findUnique({ where: { email: email! } })
-
-    if (!empresa) {
-      return NextResponse.json({ error: "Empresa não encontrada" }, { status: 404 })
-    }
+    const empresa = await prisma.empresa.findUnique({ where: { id } })
+    if (!empresa) return NextResponse.json({ error: "Empresa não encontrada" }, { status: 404 })
 
     const [totalRespostas, historico] = await Promise.all([
-      prisma.resposta.count({ where: { empresaId: empresa.id } }),
+      prisma.resposta.count({ where: { empresaId: id } }),
       prisma.relatorio.findMany({
-        where: { empresaId: empresa.id },
+        where: { empresaId: id },
         orderBy: { createdAt: "desc" },
         select: {
           id: true, mediaGeral: true, mediaDimensao1: true,

@@ -8,20 +8,27 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Empresa {
-  id           String      @id @default(cuid())
-  nome         String
-  cnpj         String?
-  email        String      @unique
-  telefone     String?
-  setor        String?
-  tamanho      String?
-  surveyToken  String      @unique
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+model Usuario {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  senha     String    // bcrypt hash
+  createdAt DateTime  @default(now())
+  empresas  Empresa[]
+}
 
-  respostas    Resposta[]
-  relatorios   Relatorio[]
+model Empresa {
+  id          String      @id @default(cuid())
+  nome        String
+  cnpj        String?
+  telefone    String?
+  tamanho     String?
+  surveyToken String      @unique
+  usuarioId   String
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  respostas   Resposta[]
+  relatorios  Relatorio[]
 }
 
 model Resposta {

@@ -134,7 +134,6 @@ export default function EmpresaDashboard() {
           <div className="title-line" />
           <h1 className="text-2xl font-black mb-1">{empresa?.nome}</h1>
           <p className="text-sm" style={{ color: "#505050" }}>
-            {empresa?.setor && `${empresa.setor} · `}
             Cadastrada em {new Date(empresa?.createdAt ?? "").toLocaleDateString("pt-BR")}
           </p>
         </div>

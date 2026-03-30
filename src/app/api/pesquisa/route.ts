@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     const empresa = await prisma.empresa.findUnique({
       where: { surveyToken: token },
-      select: { id: true, nome: true, setor: true },
+      select: { id: true, nome: true },
     })
 
     if (!empresa) {
