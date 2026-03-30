@@ -122,8 +122,8 @@ export default function EmpresaDashboard() {
             </div>
             <span className="text-white font-semibold text-sm">Avaliação NR-1</span>
           </div>
-          <button onClick={() => router.push("/")} className="text-green-100 text-sm hover:text-white">
-            + Nova empresa
+          <button onClick={() => router.push("/dashboard")} className="text-green-100 text-sm hover:text-white">
+            ← Minhas empresas
           </button>
         </div>
       </header>
