@@ -8,7 +8,7 @@ export default function Home() {
       {/* Beta banner */}
       <div className="w-full text-center py-2 text-xs font-semibold"
         style={{ background: "#fff4ec", color: "#b74b00", borderBottom: "1px solid #fde8d0" }}>
-        🧪 Versão Beta — Ferramenta em fase de testes. Seus dados estão seguros.
+        🧪 Versão Beta v2 — Ferramenta em fase de testes. Seus dados estão seguros.
       </div>
 
       {/* Header */}
