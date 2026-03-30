@@ -117,7 +117,7 @@ export default function EmpresaDashboard() {
       {/* Header */}
       <header style={{ background: "#006635" }} className="px-6 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={34}
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={22}
             style={{ filter: "brightness(0) invert(1)" }} />
           <button onClick={() => router.push("/dashboard")} className="text-green-100 text-sm hover:text-white">
             ← Minhas empresas

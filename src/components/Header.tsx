@@ -21,7 +21,7 @@ export default function Header({ backLabel, backHref, rightSlot }: Props) {
             src="/abrasel-logo.svg"
             alt="Abrasel"
             width={100}
-            height={32}
+            height={20}
             style={{ filter: "brightness(0) invert(1)" }}
           />
         </button>

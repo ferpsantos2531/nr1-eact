@@ -86,7 +86,7 @@ export default function RelatorioPage() {
       {/* Header */}
       <header style={{ background: "#006635" }} className="px-6 py-3 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={34}
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={22}
             style={{ filter: "brightness(0) invert(1)" }} />
           <div className="flex items-center gap-3">
             <button onClick={() => router.push(`/empresa/${rel.empresa.id}`)}
