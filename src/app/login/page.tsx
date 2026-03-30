@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Header from "@/components/Header"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,16 +34,7 @@ export default function LoginPage() {
         🧪 Versão Beta — Ferramenta em fase de testes
       </div>
 
-      <header style={{ background: "#006635" }} className="px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button onClick={() => router.push("/")} className="flex items-center gap-3">
-            <div className="bg-white rounded px-2 py-1">
-              <span style={{ color: "#006635" }} className="font-black text-sm">ABRASEL</span>
-            </div>
-            <span className="text-white font-semibold text-sm">Avaliação NR-1</span>
-          </button>
-        </div>
-      </header>
+      <Header backHref="/" />
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm">

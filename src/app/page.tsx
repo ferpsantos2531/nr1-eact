@@ -1,5 +1,6 @@
 "use client"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function Home() {
   const router = useRouter()
@@ -12,14 +13,10 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header style={{ background: "#006635" }} className="px-6 py-4">
+      <header style={{ background: "#006635" }} className="px-6 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded px-2 py-1">
-              <span style={{ color: "#006635" }} className="font-black text-sm tracking-tight">ABRASEL</span>
-            </div>
-            <span className="text-white font-semibold text-sm hidden sm:block">Conexão Abrasel</span>
-          </div>
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={34}
+            style={{ filter: "brightness(0) invert(1)" }} />
           <button onClick={() => router.push("/login")}
             className="text-green-100 text-sm hover:text-white transition-colors">
             Já tenho conta →
@@ -118,6 +115,10 @@ export default function Home() {
       </section>
 
       <footer className="bg-gray-900 text-gray-400 text-sm py-8 px-6 text-center">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={80} height={24}
+            style={{ filter: "brightness(0) invert(0.4)" }} />
+        </div>
         <p>© {new Date().getFullYear()} Abrasel · Avaliação NR-1 · Versão Beta</p>
       </footer>
     </main>

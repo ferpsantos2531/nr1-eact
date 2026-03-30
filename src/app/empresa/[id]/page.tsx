@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import Image from "next/image"
 
 type HistoricoItem = {
   id: string
@@ -114,14 +115,10 @@ export default function EmpresaDashboard() {
   return (
     <main className="min-h-screen" style={{ background: "#f9fafb" }}>
       {/* Header */}
-      <header style={{ background: "#006635" }} className="px-6 py-4">
+      <header style={{ background: "#006635" }} className="px-6 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded px-2 py-1">
-              <span style={{ color: "#006635" }} className="font-black text-sm">ABRASEL</span>
-            </div>
-            <span className="text-white font-semibold text-sm">Avaliação NR-1</span>
-          </div>
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={34}
+            style={{ filter: "brightness(0) invert(1)" }} />
           <button onClick={() => router.push("/dashboard")} className="text-green-100 text-sm hover:text-white">
             ← Minhas empresas
           </button>

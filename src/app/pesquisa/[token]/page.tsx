@@ -48,8 +48,15 @@ export default function PesquisaPage() {
     const novas = [...respostas]; novas[qi] = val; setRespostas(novas)
   }
 
-  function avancar() { if (dimCompleta) setDimAtual(d => d + 1) }
-  function voltar()  { setDimAtual(d => d - 1) }
+  function avancar() {
+    if (!dimCompleta) return
+    setDimAtual(d => d + 1)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+  function voltar() {
+    setDimAtual(d => d - 1)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   async function handleSubmit() {
     if (!todasRespondidas) return
@@ -114,7 +121,7 @@ export default function PesquisaPage() {
           <div className="flex items-center justify-between mb-2">
             <div>
               <p className="text-xs" style={{ color: "#9f9f9f" }}>{empresa?.nome}</p>
-              <p className="text-sm font-bold" style={{ color: "#1a1a1a" }}>Avaliação NR-1</p>
+              <p className="text-sm font-bold" style={{ color: "#1a1a1a" }}>Avaliação NR-1 · Abrasel</p>
             </div>
             <span className="text-sm font-black" style={{ color: "#006635" }}>
               {totalRespondidas}/31

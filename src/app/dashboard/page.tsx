@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 type Empresa = {
   id: string
@@ -64,14 +65,10 @@ export default function Dashboard() {
         🧪 Versão Beta — Ferramenta em fase de testes. Seus dados estão seguros.
       </div>
 
-      <header style={{ background: "#006635" }} className="px-6 py-4">
+      <header style={{ background: "#006635" }} className="px-6 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded px-2 py-1">
-              <span style={{ color: "#006635" }} className="font-black text-sm">ABRASEL</span>
-            </div>
-            <span className="text-white font-semibold text-sm hidden sm:block">Avaliação NR-1</span>
-          </div>
+          <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={34}
+            style={{ filter: "brightness(0) invert(1)" }} />
           <div className="flex items-center gap-4">
             <span className="text-green-200 text-sm hidden sm:block">{usuario?.email}</span>
             <button onClick={logout} className="text-green-100 text-sm hover:text-white">Sair</button>
