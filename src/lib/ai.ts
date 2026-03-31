@@ -21,7 +21,7 @@ export async function gerarPlanoAcaoIA(
   setor: string | null,
   mediasPorQuestao: number[]
 ): Promise<PlanoAcao> {
-  // Identifica os 5 maiores problemas
+  // Identifica as 8 questões mais críticas
   const questoesOrdenadas = mediasPorQuestao
     .map((media, i) => ({ indice: i, media, questao: QUESTOES[i] }))
     .sort((a, b) => b.media - a.media)
@@ -41,20 +41,20 @@ export async function gerarPlanoAcaoIA(
 
   const prompt = `Você é um especialista em saúde ocupacional e gestão de pessoas, com foco na NR-1 (Norma Regulamentadora nº 1) do Ministério do Trabalho e Emprego do Brasil, que desde maio de 2025 exige que as empresas avaliem e gerenciem os riscos psicossociais.
 
-Acabei de receber os resultados da Escala de Avaliação do Contexto do Trabalho (EACT) de uma empresa e preciso de um plano de ação detalhado.
+Acabei de receber os resultados de uma pesquisa de avaliação do contexto de trabalho de uma empresa e preciso de um plano de ação detalhado.
 
 **Empresa:** ${nomeEmpresa}
-**Setor:** ${setor || "Não informado"}
+**Setor:** ${setor || "Alimentação fora do lar / Restaurante"}
 **Total de respondentes:** ${resultado.totalRespostas}
 
 **Resultados Gerais:**
-- Média Geral: ${resultado.mediaGeral} (escala 1-5)
+- Média Geral: ${resultado.mediaGeral} (escala 1-5, sendo 1=Nunca e 5=Sempre)
 - Classificação: ${FEEDBACKS[resultado.categoria].titulo}
 
 **Resultados por Dimensão:**
 ${dimensoesDetalhadas.map((d) => `- ${d.nome}: ${d.media} (${FEEDBACKS[d.categoria].titulo})`).join("\n")}
 
-**Questões com maiores pontuações (mais críticas):**
+**Questões com maiores pontuações (mais críticas — ocorrem com maior frequência):**
 ${questoesOrdenadas.map((q) => `- [${q.media.toFixed(2)}] ${q.questao}`).join("\n")}
 
 Gere um plano de ação estruturado em formato JSON com exatamente esta estrutura:
@@ -79,7 +79,7 @@ Gere um plano de ação estruturado em formato JSON com exatamente esta estrutur
   "indicadores": ["lista de 4-5 indicadores para monitorar o progresso"]
 }
 
-Forneça 3-5 ações de curto prazo (0-3 meses) e 3-4 ações de médio prazo (3-12 meses). Seja específico, prático e contextualizado para o setor informado. Responda APENAS com o JSON, sem texto adicional.`
+Forneça 3-5 ações de curto prazo (0-3 meses) e 3-4 ações de médio prazo (3-12 meses). Seja específico e prático. Não mencione nomes de metodologias ou escalas de avaliação. Responda APENAS com o JSON, sem texto adicional.`
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
