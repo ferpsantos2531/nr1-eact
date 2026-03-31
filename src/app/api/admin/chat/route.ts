@@ -126,7 +126,8 @@ ${questoesCriticasTexto}
 - Quando mencionar empresas, use os dados fornecidos
 - Forneça insights acionáveis que ajudem a gestão da Abrasel
 - Se perguntado sobre tendências, analise os padrões nos dados
-- Não invente dados — use apenas os fornecidos acima`
+- Não invente dados — use apenas os fornecidos acima
+- Ao final de CADA resposta, sempre adicione uma linha em branco e depois uma sugestão proativa de próximo insight no formato: "💡 **Próximo insight:** [pergunta ou análise sugerida relevante ao contexto atual]" — escolha algo que aprofunde ou complemente o que acabou de ser discutido`
 
   // ── Build messages array ───────────────────────────────────────────────────
   const messages: Array<{ role: "user" | "assistant"; content: string }> = [
