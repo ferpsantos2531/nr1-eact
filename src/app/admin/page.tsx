@@ -35,6 +35,33 @@ type Empresa = {
 
 type ChatMessage = { role: "user" | "assistant"; content: string }
 
+/* ─── Icons ──────────────────────────────────────────────── */
+const IconUsers = () => (
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m6-4.13a4 4 0 11-8 0 4 4 0 018 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z"/>
+  </svg>
+)
+const IconBuilding = () => (
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M9 3h6a2 2 0 012 2v16H7V5a2 2 0 012-2zM9 8h1m4 0h1M9 12h1m4 0h1M9 16h1m4 0h1"/>
+  </svg>
+)
+const IconClipboard = () => (
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+  </svg>
+)
+const IconChart = () => (
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+  </svg>
+)
+const IconChevron = () => (
+  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+  </svg>
+)
+
 /* ─── Helpers ────────────────────────────────────────────── */
 const COR: Record<string, string> = { grave: "#DC2626", critico: "#D97706", satisfatorio: "#059669" }
 const LABEL: Record<string, string> = { grave: "Grave", critico: "Crítico", satisfatorio: "Satisfatório" }
@@ -236,10 +263,18 @@ export default function AdminPage() {
   const maxTendencia = stats?.tendenciaMensal.reduce((max, m) => Math.max(max, m.count), 1) ?? 1
 
   const TABS = [
-    { key: "dashboard", label: "Visão Geral" },
-    { key: "empresas", label: "Empresas" },
-    { key: "usuarios", label: "Usuários" },
-    { key: "chat", label: "Analista IA" },
+    { key: "dashboard", label: "Visão Geral", icon: (
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    )},
+    { key: "empresas", label: "Empresas", icon: (
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M9 3h6a2 2 0 012 2v16H7V5a2 2 0 012-2zM9 12h1m4 0h1"/></svg>
+    )},
+    { key: "usuarios", label: "Usuários", icon: (
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zm8 0a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    )},
+    { key: "chat", label: "Analista IA", icon: (
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    )},
   ] as const
 
   return (
@@ -275,13 +310,14 @@ export default function AdminPage() {
         <div className="flex gap-1 mb-8 p-1 rounded-xl w-fit" style={{ background: "#e8e8e8" }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setBusca("") }}
-              className="px-5 py-2 rounded-lg text-sm font-semibold transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
               style={{
                 background: tab === t.key ? "#fff" : "transparent",
                 color: tab === t.key ? "#006635" : "#6b7280",
-                boxShadow: tab === t.key ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                boxShadow: tab === t.key ? "0 1px 3px rgba(0,0,0,0.10)" : "none",
               }}>
-              {t.label}
+              {t.icon}
+              <span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
@@ -292,18 +328,27 @@ export default function AdminPage() {
 
             {/* Row 1: KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Usuários cadastrados", value: stats.totalUsuarios, icon: "👤", bg: "linear-gradient(135deg,#f0f9f4,#e6f4ed)" },
-                { label: "Empresas cadastradas", value: stats.totalEmpresas, icon: "🏢", bg: "linear-gradient(135deg,#f0f9f4,#e6f4ed)" },
-                { label: "Total de respondentes", value: stats.totalRespostas, icon: "📋", bg: "linear-gradient(135deg,#fff7ed,#fef3e2)" },
-                { label: "Relatórios gerados", value: stats.totalRelatorios, icon: "📊", bg: "linear-gradient(135deg,#f0f9f4,#e6f4ed)" },
-              ].map(k => (
-                <div key={k.label} className="rounded-xl border px-4 py-5 text-center"
-                  style={{ background: k.bg, borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                  <div className="text-2xl mb-1">{k.icon}</div>
-                  <div className="text-3xl font-black mb-1" style={{ color: "#006635" }}>{k.value}</div>
-                  <div className="text-xs" style={{ color: "#6b7280" }}>{k.label}</div>
-                </div>
+              {([
+                { label: "Usuários cadastrados", value: stats.totalUsuarios, Icon: IconUsers, accentColor: "#006635", accentBg: "#e8f5ee", toTab: "usuarios" },
+                { label: "Empresas cadastradas", value: stats.totalEmpresas, Icon: IconBuilding, accentColor: "#2563eb", accentBg: "#eff6ff", toTab: "empresas" },
+                { label: "Total de respondentes", value: stats.totalRespostas, Icon: IconClipboard, accentColor: "#d97706", accentBg: "#fffbeb", toTab: "empresas" },
+                { label: "Relatórios gerados", value: stats.totalRelatorios, Icon: IconChart, accentColor: "#7c3aed", accentBg: "#f5f3ff", toTab: "empresas" },
+              ] as const).map(k => (
+                <button key={k.label} onClick={() => setTab(k.toTab)}
+                  className="rounded-xl border bg-white px-5 py-5 text-left transition-all hover:shadow-md group"
+                  style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderTop: `3px solid ${k.accentColor}` }}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+                      style={{ background: k.accentBg, color: k.accentColor }}>
+                      <k.Icon />
+                    </div>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: k.accentColor }}>
+                      <IconChevron />
+                    </span>
+                  </div>
+                  <div className="text-3xl font-black mb-0.5" style={{ color: "#1a1a1a" }}>{k.value}</div>
+                  <div className="text-xs font-medium" style={{ color: "#6b7280" }}>{k.label}</div>
+                </button>
               ))}
             </div>
 
@@ -400,7 +445,7 @@ export default function AdminPage() {
                 <SectionHeading>Empresas em Maior Risco</SectionHeading>
                 {stats.topRisco.length === 0 ? (
                   <div className="py-8 text-center">
-                    <div className="text-3xl mb-2">📊</div>
+                    <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhum dado disponível</p>
                   </div>
                 ) : (
@@ -432,7 +477,7 @@ export default function AdminPage() {
                 <SectionHeading>Melhores Resultados</SectionHeading>
                 {stats.topSaudaveis.length === 0 ? (
                   <div className="py-8 text-center">
-                    <div className="text-3xl mb-2">🏆</div>
+                    <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                     <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhum dado disponível</p>
                   </div>
                 ) : (
@@ -640,7 +685,7 @@ export default function AdminPage() {
                     {empresasFiltradas.length === 0 && (
                       <tr>
                         <td colSpan={8} className="px-4 py-12 text-center">
-                          <div className="text-3xl mb-2">🔍</div>
+                          <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
                           <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhuma empresa encontrada.</p>
                         </td>
                       </tr>
@@ -670,7 +715,7 @@ export default function AdminPage() {
             {usuariosFiltrados.length === 0 ? (
               <div className="rounded-xl border bg-white px-6 py-12 text-center"
                 style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                <div className="text-3xl mb-2">👤</div>
+                <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
                 <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhum usuário encontrado.</p>
               </div>
             ) : (
@@ -772,7 +817,7 @@ export default function AdminPage() {
               {chatMessages.length === 0 && (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center" style={{ color: "#9f9f9f" }}>
-                    <div className="text-4xl mb-3">💬</div>
+                    <svg className="w-10 h-10 mx-auto mb-3" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                     <p className="text-sm">Selecione uma sugestão ou escreva sua pergunta abaixo</p>
                   </div>
                 </div>
