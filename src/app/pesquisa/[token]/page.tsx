@@ -14,7 +14,6 @@ const ESCALA = [
   { valor: 5, label: "Sempre" },
 ]
 
-const DIM_ICONS = ["⚙️", "🏗️", "🤝"]
 
 export default function PesquisaPage() {
   const { token } = useParams<{ token: string }>()
@@ -48,14 +47,16 @@ export default function PesquisaPage() {
     const novas = [...respostas]; novas[qi] = val; setRespostas(novas)
   }
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [dimAtual])
+
   function avancar() {
     if (!dimCompleta) return
     setDimAtual(d => d + 1)
-    window.scrollTo({ top: 0, behavior: "smooth" })
   }
   function voltar() {
     setDimAtual(d => d - 1)
-    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   async function handleSubmit() {
@@ -158,36 +159,13 @@ export default function PesquisaPage() {
           })}
         </div>
 
-        {/* Cabeçalho da dimensão */}
-        <div className="card mb-5" style={{ borderLeft: "3px solid #006635" }}>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{DIM_ICONS[dimAtual]}</span>
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: "#006635" }}>
-                Seção {dimAtual + 1} de {DIMENSOES.length}
-              </p>
-              <h2 className="font-black text-base">{dim.nome}</h2>
-              <p className="text-xs mt-0.5" style={{ color: "#9f9f9f" }}>{dim.descricao}</p>
-            </div>
-            <span className="text-sm font-black shrink-0" style={{ color: "#006635" }}>
-              {respondidosDaDim}/{questoesDaDim.length}
-            </span>
-          </div>
-          <div className="mt-3 w-full rounded-full h-1" style={{ background: "#f1f1f1" }}>
-            <div className="h-1 rounded-full transition-all"
-              style={{ width: `${(respondidosDaDim / questoesDaDim.length) * 100}%`, background: "#f48131" }} />
-          </div>
-        </div>
-
-        {/* Instrução escala */}
-        <div className="flex gap-1.5 mb-5 text-center">
-          {ESCALA.map(e => (
-            <div key={e.valor} className="flex-1 py-1.5 rounded-md text-xs" style={{ background: "#fff", border: "1px solid #e8e8e8" }}>
-              <div className="font-black text-sm" style={{ color: "#006635" }}>{e.valor}</div>
-              <div className="hidden sm:block" style={{ color: "#9f9f9f" }}>{e.label}</div>
-            </div>
-          ))}
-        </div>
+        {/* Instrução */}
+        <p className="text-sm mb-5 px-1" style={{ color: "#505050" }}>
+          Marque de <strong>1 a 5</strong> em cada questão, sendo:{" "}
+          <strong>1</strong> – nunca;&nbsp; <strong>2</strong> – raramente;&nbsp;
+          <strong>3</strong> – às vezes;&nbsp; <strong>4</strong> – frequentemente;&nbsp;
+          <strong>5</strong> – sempre.
+        </p>
 
         {/* Questões */}
         <div className="space-y-3">
