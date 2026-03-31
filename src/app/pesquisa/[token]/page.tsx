@@ -160,12 +160,24 @@ export default function PesquisaPage() {
         </div>
 
         {/* Instrução */}
-        <p className="text-sm mb-5 px-1" style={{ color: "#505050" }}>
-          Marque de <strong>1 a 5</strong> em cada questão, sendo:{" "}
-          <strong>1</strong> – nunca;&nbsp; <strong>2</strong> – raramente;&nbsp;
-          <strong>3</strong> – às vezes;&nbsp; <strong>4</strong> – frequentemente;&nbsp;
-          <strong>5</strong> – sempre.
-        </p>
+        <div className="mb-5 rounded-xl p-4" style={{ background: "#f0f7f3", border: "1px solid #c8e6d4" }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#006635" }}>
+            Como responder
+          </p>
+          <div className="flex gap-2">
+            {ESCALA.map(e => (
+              <div key={e.valor} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
+                  style={{ background: "#006635", color: "#fff" }}>
+                  {e.valor}
+                </div>
+                <span className="text-center leading-tight" style={{ fontSize: "10px", color: "#505050" }}>
+                  {e.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Questões */}
         <div className="space-y-3">
