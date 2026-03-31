@@ -160,24 +160,14 @@ export default function PesquisaPage() {
         </div>
 
         {/* Instrução */}
-        <div className="mb-5 rounded-xl p-4" style={{ background: "#f0f7f3", border: "1px solid #c8e6d4" }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#006635" }}>
-            Como responder
-          </p>
-          <div className="flex gap-2">
-            {ESCALA.map(e => (
-              <div key={e.valor} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
-                  style={{ background: "#006635", color: "#fff" }}>
-                  {e.valor}
-                </div>
-                <span className="text-center leading-tight" style={{ fontSize: "10px", color: "#505050" }}>
-                  {e.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <p className="text-sm mb-5 px-1 leading-relaxed" style={{ color: "#6b7280" }}>
+          Marque de <span className="font-semibold" style={{ color: "#1a1a1a" }}>1 a 5</span> em cada questão, sendo{" "}
+          <span className="font-semibold" style={{ color: "#1a1a1a" }}>1</span> – nunca,{" "}
+          <span className="font-semibold" style={{ color: "#1a1a1a" }}>2</span> – raramente,{" "}
+          <span className="font-semibold" style={{ color: "#1a1a1a" }}>3</span> – às vezes,{" "}
+          <span className="font-semibold" style={{ color: "#1a1a1a" }}>4</span> – frequentemente,{" "}
+          <span className="font-semibold" style={{ color: "#1a1a1a" }}>5</span> – sempre.
+        </p>
 
         {/* Questões */}
         <div className="space-y-3">
