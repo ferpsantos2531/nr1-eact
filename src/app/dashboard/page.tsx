@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [loading, setLoading] = useState(true)
   const [showNovaEmpresa, setShowNovaEmpresa] = useState(false)
+  const [showTrocarSenha, setShowTrocarSenha] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -69,8 +70,13 @@ export default function Dashboard() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={22}
             style={{ filter: "brightness(0) invert(1)" }} />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-green-200 text-sm hidden sm:block">{usuario?.email}</span>
+            <button onClick={() => setShowTrocarSenha(true)}
+              className="text-xs px-3 py-1.5 rounded-lg font-medium"
+              style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>
+              Trocar senha
+            </button>
             <button onClick={logout} className="text-green-100 text-sm hover:text-white">Sair</button>
           </div>
         </div>
@@ -91,6 +97,11 @@ export default function Dashboard() {
             + Nova empresa
           </button>
         </div>
+
+        {/* Modal trocar senha */}
+        {showTrocarSenha && (
+          <TrocarSenhaModal onClose={() => setShowTrocarSenha(false)} />
+        )}
 
         {/* Modal nova empresa */}
         {showNovaEmpresa && (
@@ -176,6 +187,92 @@ export default function Dashboard() {
         )}
       </div>
     </main>
+  )
+}
+
+function TrocarSenhaModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ senhaAtual: "", novaSenha: "", confirmar: "" })
+  const [show, setShow] = useState({ atual: false, nova: false, confirmar: false })
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState("")
+  const [sucesso, setSucesso] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setErro("")
+    if (form.novaSenha !== form.confirmar) { setErro("As senhas não coincidem"); return }
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/senha", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senhaAtual: form.senhaAtual, novaSenha: form.novaSenha }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setErro(data.error || "Erro ao trocar senha"); return }
+      setSucesso(true)
+      setTimeout(onClose, 1800)
+    } catch { setErro("Erro de conexão.") }
+    finally { setLoading(false) }
+  }
+
+  const Field = ({ id, label, value, showKey }: { id: keyof typeof form; label: string; value: string; showKey: keyof typeof show }) => (
+    <div>
+      <label className="label">{label}</label>
+      <div className="relative">
+        <input
+          className="input pr-10"
+          type={show[showKey] ? "text" : "password"}
+          value={value}
+          onChange={e => setForm({ ...form, [id]: e.target.value })}
+          required
+        />
+        <button type="button" tabIndex={-1}
+          onClick={() => setShow(s => ({ ...s, [showKey]: !s[showKey] }))}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+          style={{ color: "#9f9f9f" }}>
+          {show[showKey] ? "Ocultar" : "Mostrar"}
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
+      <div className="w-full max-w-sm card" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-black text-lg">Trocar senha</h2>
+          <button onClick={onClose} className="text-2xl leading-none" style={{ color: "#9f9f9f" }}>×</button>
+        </div>
+
+        {sucesso ? (
+          <div className="text-center py-6">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{ background: "#e8f5ee" }}>
+              <svg className="w-6 h-6" style={{ color: "#006635" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="font-black mb-1">Senha atualizada!</p>
+            <p className="text-sm" style={{ color: "#9f9f9f" }}>Fechando...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field id="senhaAtual" label="Senha atual" value={form.senhaAtual} showKey="atual" />
+            <Field id="novaSenha" label="Nova senha (mín. 6 caracteres)" value={form.novaSenha} showKey="nova" />
+            <Field id="confirmar" label="Confirmar nova senha" value={form.confirmar} showKey="confirmar" />
+            {erro && <p className="text-sm" style={{ color: "#dc2626" }}>{erro}</p>}
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={onClose} className="btn-outline flex-1">Cancelar</button>
+              <button type="submit" disabled={loading} className="btn-green flex-1">
+                {loading ? "Salvando..." : "Salvar senha"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
   )
 }
 
