@@ -7,23 +7,23 @@ const secret = new TextEncoder().encode(
 
 export const COOKIE_NAME = "nr1_session"
 
-export async function signToken(payload: { usuarioId: string }) {
+export async function signToken(payload: { usuarioId: string; isAdmin?: boolean }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("30d")
     .sign(secret)
 }
 
-export async function verifyToken(token: string): Promise<{ usuarioId: string } | null> {
+export async function verifyToken(token: string): Promise<{ usuarioId: string; isAdmin: boolean } | null> {
   try {
     const { payload } = await jwtVerify(token, secret)
-    return payload as { usuarioId: string }
+    return payload as { usuarioId: string; isAdmin: boolean }
   } catch {
     return null
   }
 }
 
-export async function getSession(): Promise<{ usuarioId: string } | null> {
+export async function getSession(): Promise<{ usuarioId: string; isAdmin: boolean } | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value
   if (!token) return null

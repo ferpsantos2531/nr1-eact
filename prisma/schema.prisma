@@ -12,6 +12,7 @@ model Usuario {
   id        String    @id @default(cuid())
   email     String    @unique
   senha     String    // bcrypt hash
+  isAdmin   Boolean   @default(false)
   createdAt DateTime  @default(now())
   empresas  Empresa[]
 }

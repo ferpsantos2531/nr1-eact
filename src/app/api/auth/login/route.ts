@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 })
     }
 
-    const token = await signToken({ usuarioId: usuario.id })
+    const token = await signToken({ usuarioId: usuario.id, isAdmin: usuario.isAdmin })
 
     const res = NextResponse.json({ ok: true })
     res.cookies.set(COOKIE_NAME, token, {
