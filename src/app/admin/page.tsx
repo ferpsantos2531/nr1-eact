@@ -109,6 +109,62 @@ function fmtMes(ym: string) {
   return `${meses[parseInt(m) - 1]}/${y.slice(2)}`
 }
 
+/* ─── Chat helpers ───────────────────────────────────────── */
+function parseInsight(content: string): { body: string; insight: string | null } {
+  const lines = content.split("\n")
+  const idx = lines.findIndex(l => l.includes("💡"))
+  if (idx === -1) return { body: content, insight: null }
+  const insightLine = lines[idx].replace(/💡\s*\*?\*?Próximo insight:?\*?\*?\s*/i, "").trim()
+  const body = lines.slice(0, idx).join("\n").trimEnd()
+  return { body, insight: insightLine || null }
+}
+
+function renderFormatted(text: string) {
+  const lines = text.split("\n")
+  const elements: React.ReactNode[] = []
+  let listItems: string[] = []
+
+  const flushList = (key: string) => {
+    if (listItems.length > 0) {
+      elements.push(
+        <ul key={`ul-${key}`} className="space-y-1 my-2 ml-2">
+          {listItems.map((item, j) => (
+            <li key={j} className="flex items-start gap-2 text-sm" style={{ color: "#374151" }}>
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#006635" }} />
+              <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+            </li>
+          ))}
+        </ul>
+      )
+      listItems = []
+    }
+  }
+
+  lines.forEach((line, i) => {
+    if (/^[-•]\s/.test(line)) {
+      listItems.push(line.replace(/^[-•]\s/, ""))
+    } else {
+      flushList(String(i))
+      if (!line.trim()) {
+        if (elements.length > 0) elements.push(<div key={`sp-${i}`} className="h-1" />)
+      } else if (/^#{1,3}\s/.test(line)) {
+        const txt = line.replace(/^#{1,3}\s/, "")
+        elements.push(
+          <p key={i} className="font-bold text-sm mb-1" style={{ color: "#1a1a1a" }}
+            dangerouslySetInnerHTML={{ __html: txt.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+        )
+      } else {
+        elements.push(
+          <p key={i} className="text-sm leading-relaxed" style={{ color: "#374151" }}
+            dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+        )
+      }
+    }
+  })
+  flushList("end")
+  return <div className="space-y-0.5">{elements}</div>
+}
+
 /* ─── Typing Indicator ───────────────────────────────────── */
 function TypingDots() {
   return (
@@ -784,96 +840,142 @@ export default function AdminPage() {
 
         {/* ── TAB: ANALISTA IA ───────────────────────────── */}
         {tab === "chat" && (
-          <div className="flex flex-col" style={{ height: "calc(100vh - 220px)", minHeight: 500 }}>
+          <div className="flex flex-col gap-3" style={{ height: "calc(100vh - 220px)", minHeight: 520 }}>
 
-            {/* Sugestões */}
-            {chatMessages.length === 0 && (
-              <div className="mb-4">
-                <div className="rounded-xl border bg-white px-6 py-5 mb-4"
-                  style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: "#006635" }} />
-                    <h3 className="font-black text-base" style={{ color: "#1a1a1a" }}>Analista IA</h3>
+            {/* Header card */}
+            <div className="rounded-xl border bg-white px-5 py-4 flex items-center justify-between"
+              style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm"
+                  style={{ background: "#e8f5ee", color: "#006635" }}>IA</div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-sm" style={{ color: "#1a1a1a" }}>Analista IA</span>
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ background: "#f48131", color: "#fff", fontSize: "0.6rem" }}>BETA</span>
                   </div>
-                  <p className="text-sm mt-1" style={{ color: "#6b7280" }}>
-                    Faça perguntas sobre os dados da plataforma. O analista tem acesso a todos os dados das empresas, médias, classificações e tendências.
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {SUGESTOES.map((s, i) => (
-                    <button key={i} onClick={() => sendChat(s)}
-                      className="text-left text-sm rounded-xl border px-4 py-3 font-medium transition-all hover:shadow-md"
-                      style={{
-                        borderColor: "#006635",
-                        color: "#006635",
-                        background: "#f0f9f4",
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                      }}>
-                      {s}
-                    </button>
-                  ))}
+                  <p className="text-xs" style={{ color: "#9f9f9f" }}>Acesso completo aos dados · Responde em tempo real</p>
                 </div>
               </div>
-            )}
+              {chatMessages.length > 0 && (
+                <button onClick={() => setChatMessages([])}
+                  className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                  style={{ background: "#f9fafb", color: "#6b7280", border: "1px solid #e8e8e8" }}>
+                  Nova conversa
+                </button>
+              )}
+            </div>
 
             {/* Chat area */}
-            <div className="flex-1 rounded-xl border bg-white overflow-y-auto px-4 py-4 space-y-4"
-              style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <div className="flex-1 rounded-xl border bg-white overflow-y-auto px-4 py-5"
+              style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
 
+              {/* Empty state + suggestions */}
               {chatMessages.length === 0 && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center" style={{ color: "#9f9f9f" }}>
-                    <svg className="w-10 h-10 mx-auto mb-3" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                    <p className="text-sm">Selecione uma sugestão ou escreva sua pergunta abaixo</p>
+                <div className="h-full flex flex-col justify-center">
+                  <div className="text-center mb-6">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 font-black text-xl"
+                      style={{ background: "#e8f5ee", color: "#006635" }}>IA</div>
+                    <p className="font-semibold mb-1" style={{ color: "#1a1a1a" }}>O que você quer saber?</p>
+                    <p className="text-sm" style={{ color: "#9f9f9f" }}>Escolha uma sugestão ou escreva sua pergunta</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto w-full">
+                    {SUGESTOES.map((s, i) => (
+                      <button key={i} onClick={() => sendChat(s)}
+                        className="text-left text-sm rounded-xl px-4 py-3 font-medium transition-all hover:shadow-sm flex items-center gap-3"
+                        style={{ background: "#f9fafb", border: "1px solid #e8e8e8", color: "#374151" }}>
+                        <span className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black"
+                          style={{ background: "#e8f5ee", color: "#006635" }}>{i + 1}</span>
+                        {s}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black mr-2 flex-shrink-0 mt-0.5"
-                      style={{ background: "#006635", color: "#fff" }}>
-                      IA
-                    </div>
-                  )}
-                  <div className="max-w-[75%]">
-                    <div
-                      className="px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
-                      style={msg.role === "user" ? {
-                        background: "#006635",
-                        color: "#fff",
-                        borderBottomRightRadius: 4,
-                      } : {
-                        background: "#fff",
-                        color: "#1a1a1a",
-                        border: "1px solid #e8e8e8",
-                        borderLeft: "3px solid #006635",
-                        borderBottomLeftRadius: 4,
-                      }}>
-                      {msg.content || (msg.role === "assistant" && i === chatMessages.length - 1 && chatLoading ? null : msg.content)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* Messages */}
+              <div className="space-y-5">
+                {chatMessages.map((msg, i) => {
+                  const isLast = i === chatMessages.length - 1
+                  const isStreaming = isLast && chatLoading
 
-              {chatLoading && chatMessages[chatMessages.length - 1]?.content === "" && (
-                <div className="flex justify-start">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black mr-2 flex-shrink-0 mt-0.5"
-                    style={{ background: "#006635", color: "#fff" }}>
-                    IA
-                  </div>
-                  <div className="rounded-2xl border" style={{ borderColor: "#e8e8e8", borderLeft: "3px solid #006635" }}>
-                    <TypingDots />
-                  </div>
-                </div>
-              )}
+                  if (msg.role === "user") {
+                    return (
+                      <div key={i} className="flex justify-end">
+                        <div className="max-w-[70%] px-4 py-2.5 rounded-2xl text-sm font-medium"
+                          style={{ background: "#006635", color: "#fff", borderBottomRightRadius: 6 }}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    )
+                  }
 
-              <div ref={chatEndRef} />
+                  const { body, insight } = parseInsight(msg.content)
+                  const showChips = !isStreaming && msg.content.length > 0
+
+                  return (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
+                        style={{ background: "#e8f5ee", color: "#006635" }}>IA</div>
+                      <div className="flex-1 min-w-0">
+                        {/* Main response card */}
+                        <div className="rounded-2xl px-4 py-3.5"
+                          style={{ background: "#f9fafb", border: "1px solid #eee", borderBottomLeftRadius: 6 }}>
+                          {msg.content ? renderFormatted(body) : null}
+                        </div>
+
+                        {/* Insight chip + extra suggestions */}
+                        {showChips && (
+                          <div className="mt-3 space-y-2">
+                            {insight && (
+                              <div>
+                                <p className="text-xs font-semibold mb-1.5 flex items-center gap-1" style={{ color: "#9f9f9f" }}>
+                                  <span>💡</span> Próximo insight sugerido
+                                </p>
+                                <button onClick={() => sendChat(insight)}
+                                  className="text-left text-sm rounded-xl px-4 py-2.5 font-medium w-full transition-all hover:shadow-sm flex items-center justify-between gap-3"
+                                  style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c" }}>
+                                  <span>{insight}</span>
+                                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="flex-shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-xs font-semibold mb-1.5" style={{ color: "#9f9f9f" }}>Outras perguntas</p>
+                              <div className="flex flex-wrap gap-2">
+                                {SUGESTOES.filter(s => !chatMessages.some(m => m.role === "user" && m.content === s)).slice(0, 3).map((s, j) => (
+                                  <button key={j} onClick={() => sendChat(s)}
+                                    className="text-xs px-3 py-1.5 rounded-full font-medium transition-all hover:shadow-sm"
+                                    style={{ background: "#f9fafb", border: "1px solid #e8e8e8", color: "#374151" }}>
+                                    {s}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Typing indicator */}
+                {chatLoading && chatMessages[chatMessages.length - 1]?.content === "" && (
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                      style={{ background: "#e8f5ee", color: "#006635" }}>IA</div>
+                    <div className="rounded-2xl px-4" style={{ background: "#f9fafb", border: "1px solid #eee" }}>
+                      <TypingDots />
+                    </div>
+                  </div>
+                )}
+
+                <div ref={chatEndRef} />
+              </div>
             </div>
 
             {/* Input area */}
-            <div className="mt-3 flex gap-2">
+            <div className="flex gap-2">
               <input
                 ref={chatInputRef}
                 value={chatInput}
@@ -882,25 +984,21 @@ export default function AdminPage() {
                 placeholder="Faça uma pergunta sobre os dados da plataforma..."
                 disabled={chatLoading}
                 className="flex-1 border rounded-xl px-4 py-3 text-sm"
-                style={{
-                  borderColor: "#e8e8e8",
-                  outline: "none",
-                  background: chatLoading ? "#f9fafb" : "#fff",
-                }}
+                style={{ borderColor: "#e8e8e8", outline: "none", background: chatLoading ? "#f9fafb" : "#fff" }}
               />
               <button
                 onClick={() => sendChat(chatInput)}
                 disabled={chatLoading || !chatInput.trim()}
-                className="px-5 py-3 rounded-xl text-sm font-semibold transition-all"
+                className="px-5 py-3 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"
                 style={{
                   background: chatLoading || !chatInput.trim() ? "#e8e8e8" : "#006635",
                   color: chatLoading || !chatInput.trim() ? "#9f9f9f" : "#fff",
                   cursor: chatLoading || !chatInput.trim() ? "not-allowed" : "pointer",
                 }}>
-                {chatLoading ? (
-                  <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                    style={{ borderColor: "#9f9f9f", borderTopColor: "transparent" }} />
-                ) : "Enviar"}
+                {chatLoading
+                  ? <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "#9f9f9f", borderTopColor: "transparent" }} />
+                  : <><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg><span className="hidden sm:inline">Enviar</span></>
+                }
               </button>
             </div>
           </div>
