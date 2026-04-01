@@ -215,6 +215,7 @@ export default function AdminPage() {
           fetch("/api/admin/usuarios"),
           fetch("/api/admin/empresas"),
         ])
+        if (sRes.status === 401) { router.push("/login"); return }
         if (sRes.status === 403) { setErro("Acesso restrito a administradores."); return }
         const [s, u, e] = await Promise.all([sRes.json(), uRes.json(), eRes.json()])
         setStats(s)

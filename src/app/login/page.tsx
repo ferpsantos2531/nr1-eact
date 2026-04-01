@@ -21,7 +21,7 @@ export default function LoginPage() {
       })
       const data = await res.json()
       if (!res.ok) { setErro(data.error || "Erro ao entrar"); return }
-      router.push("/dashboard")
+      router.push(data.isAdmin ? "/admin" : "/dashboard")
     } catch { setErro("Erro de conexão. Tente novamente.") }
     finally { setLoading(false) }
   }
