@@ -70,7 +70,13 @@ export default function CadastroPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true); setErro("")
+    setErro("")
+    const cnpjDigits = form.cnpj.replace(/\D/g, "")
+    if (cnpjDigits.length !== 14) {
+      setErro("CNPJ inválido. Digite todos os 14 dígitos.")
+      return
+    }
+    setLoading(true)
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -104,7 +110,7 @@ export default function CadastroPage() {
           <div className="title-line" />
           <h1 className="text-2xl font-black mb-1">Criar conta</h1>
           <p className="text-sm mb-6" style={{ color: "#505050" }}>
-            Cadastre sua empresa e comece a avaliação NR-1
+            Cadastre seu estabelecimento e comece a avaliação NR-1
           </p>
 
           <div className="card">
@@ -160,7 +166,7 @@ export default function CadastroPage() {
 
               {/* Nome da empresa */}
               <div>
-                <label className="label">Nome da empresa *</label>
+                <label className="label">Nome do estabelecimento *</label>
                 <input className="input" value={form.nomeEmpresa}
                   onChange={e => setForm({...form, nomeEmpresa: e.target.value})}
                   placeholder="Ex: Restaurante do João" required />
@@ -193,7 +199,7 @@ export default function CadastroPage() {
 
               {/* Dados da empresa */}
               <div className="border-t pt-4" style={{ borderColor: "#f1f1f1" }}>
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9f9f9f" }}>Dados da empresa</p>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9f9f9f" }}>Dados do estabelecimento</p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>

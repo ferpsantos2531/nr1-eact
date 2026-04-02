@@ -279,7 +279,7 @@ export default function GeoTab() {
                 className="border rounded-lg px-3 py-2 text-sm flex-1 min-w-0"
                 style={{ borderColor: "#e8e8e8", outline: "none", maxWidth: 200 }} />
               <div className="flex gap-1 rounded-lg overflow-hidden border" style={{ borderColor: "#e8e8e8" }}>
-                {([["risco","Risco"],["empresas","Empresas"],["nome","A-Z"]] as const).map(([k,l]) => (
+                {([["risco","Risco"],["empresas","Estabelecimentos"],["nome","A-Z"]] as const).map(([k,l]) => (
                   <button key={k} onClick={() => setOrdenacao(k)}
                     className="px-3 py-2 text-xs font-semibold transition-colors"
                     style={{ background: ordenacao === k ? "#006635" : "#fff", color: ordenacao === k ? "#fff" : "#9f9f9f" }}>
@@ -317,7 +317,7 @@ export default function GeoTab() {
                           </div>
                           <DistBar pctG={e.pctGrave} pctC={e.pctCritico} pctS={e.pctSatisfatorio} total={e.empresasComRelatorio} />
                           <div className="flex gap-3 mt-1 text-xs" style={{ color: "#9f9f9f" }}>
-                            <span>{e.totalEmpresas} empresa{e.totalEmpresas !== 1 ? "s" : ""}</span>
+                            <span>{e.totalEmpresas} estabelecimento{e.totalEmpresas !== 1 ? "s" : ""}</span>
                             <span>{e.empresasComRelatorio} avaliada{e.empresasComRelatorio !== 1 ? "s" : ""}</span>
                             {e.empresasSemRelatorio > 0 && <span style={{ color: "#d97706" }}>⚠ {e.empresasSemRelatorio} sem relatório</span>}
                           </div>
@@ -346,7 +346,7 @@ export default function GeoTab() {
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-semibold" style={{ color: "#1a1a1a" }}>{c.cidade}</div>
                                 <div className="text-xs" style={{ color: "#9f9f9f" }}>
-                                  {c.totalEmpresas} empresa{c.totalEmpresas !== 1 ? "s" : ""}
+                                  {c.totalEmpresas} estabelecimento{c.totalEmpresas !== 1 ? "s" : ""}
                                   {c.empresasComRelatorio > 0 && ` · ${c.empresasComRelatorio} avaliada${c.empresasComRelatorio !== 1 ? "s" : ""}`}
                                 </div>
                                 <div className="mt-1">
@@ -398,7 +398,7 @@ export default function GeoTab() {
 
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   {[
-                    { label: "Empresas", val: estadoSelected.totalEmpresas, cor: "#1a1a1a" },
+                    { label: "Estabelecimentos", val: estadoSelected.totalEmpresas, cor: "#1a1a1a" },
                     { label: "Avaliadas", val: estadoSelected.empresasComRelatorio, cor: "#006635" },
                     { label: "Pendentes", val: estadoSelected.empresasSemRelatorio, cor: estadoSelected.empresasSemRelatorio > 0 ? "#d97706" : "#9f9f9f" },
                   ].map(item => (
@@ -488,7 +488,7 @@ export default function GeoTab() {
                     </div>
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       {[
-                        { label: "Total",     val: r.totalEmpresas,        cor: "#1a1a1a" },
+                        { label: "Total",     val: r.totalEmpresas,         cor: "#1a1a1a" },
                         { label: "Avaliadas", val: r.empresasComRelatorio,  cor: "#006635" },
                         { label: "Pendentes", val: r.empresasSemRelatorio,  cor: r.empresasSemRelatorio > 0 ? "#d97706" : "#9f9f9f" },
                       ].map(item => (
@@ -544,7 +544,7 @@ export default function GeoTab() {
                 <table className="w-full text-sm">
                   <thead style={{ background: "#f9fafb" }}>
                     <tr>
-                      {["Região","Empresas","Avaliadas","Média","Classificação","Distribuição de Risco"].map(h => (
+                      {["Região","Estabelecimentos","Avaliados","Média","Classificação","Distribuição de Risco"].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: "#6b7280" }}>{h}</th>
                       ))}
                     </tr>
@@ -599,7 +599,7 @@ export default function GeoTab() {
               <table className="w-full text-sm">
                 <thead style={{ background: "#f9fafb", borderBottom: "2px solid #f1f1f1" }}>
                   <tr>
-                    {["#","Município","Estado","Região","Empresas","Avaliadas","Média","Classificação","Distribuição de Risco"].map(h => (
+                    {["#","Município","Estado","Região","Estabelecimentos","Avaliados","Média","Classificação","Distribuição de Risco"].map(h => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold whitespace-nowrap" style={{ color: "#6b7280" }}>{h}</th>
                     ))}
                   </tr>

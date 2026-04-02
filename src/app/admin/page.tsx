@@ -514,7 +514,7 @@ export default function AdminPage() {
     { key: "dashboard", label: "Visão Geral", icon: (
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     )},
-    { key: "empresas", label: "Empresas", icon: (
+    { key: "empresas", label: "Estabelecimentos", icon: (
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M9 3h6a2 2 0 012 2v16H7V5a2 2 0 012-2zM9 12h1m4 0h1"/></svg>
     )},
     { key: "usuarios", label: "Usuários", icon: (
@@ -542,7 +542,7 @@ export default function AdminPage() {
               <div className="text-white text-sm font-semibold leading-tight">Painel Administrativo · Abrasel</div>
               {stats && (
                 <div className="text-xs leading-tight" style={{ color: "rgba(255,255,255,0.65)" }}>
-                  {stats.totalEmpresas} empresas · {stats.totalRespostas} respondentes
+                  {stats.totalEmpresas} estabelecimentos · {stats.totalRespostas} respondentes
                 </div>
               )}
             </div>
@@ -587,7 +587,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {([
                 { label: "Usuários cadastrados", value: stats.totalUsuarios, Icon: IconUsers, accentColor: "#006635", accentBg: "#e8f5ee", toTab: "usuarios" },
-                { label: "Empresas cadastradas", value: stats.totalEmpresas, Icon: IconBuilding, accentColor: "#2563eb", accentBg: "#eff6ff", toTab: "empresas" },
+                { label: "Estabelecimentos cadastrados", value: stats.totalEmpresas, Icon: IconBuilding, accentColor: "#2563eb", accentBg: "#eff6ff", toTab: "empresas" },
                 { label: "Total de respondentes", value: stats.totalRespostas, Icon: IconClipboard, accentColor: "#d97706", accentBg: "#fffbeb", toTab: "empresas" },
                 { label: "Relatórios gerados", value: stats.totalRelatorios, Icon: IconChart, accentColor: "#7c3aed", accentBg: "#f5f3ff", toTab: "empresas" },
               ] as const).map(k => (
@@ -617,7 +617,7 @@ export default function AdminPage() {
                 style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                 <SectionHeading>Média Geral da Plataforma</SectionHeading>
                 <p className="text-xs mb-4" style={{ color: "#9f9f9f" }}>
-                  Baseado nos últimos relatórios de cada empresa
+                  Baseado nos últimos relatórios de cada estabelecimento
                 </p>
                 <div className="flex items-center gap-4 mb-6">
                   <div className="text-5xl font-black"
@@ -627,7 +627,7 @@ export default function AdminPage() {
                   <div>
                     <div className="text-xs" style={{ color: "#9f9f9f" }}>Escala 1 a 5</div>
                     <div className="text-xs mt-0.5" style={{ color: "#9f9f9f" }}>
-                      {stats.empresasComRelatorio} empresa{stats.empresasComRelatorio !== 1 ? "s" : ""} avaliada{stats.empresasComRelatorio !== 1 ? "s" : ""}
+                      {stats.empresasComRelatorio} estabelecimento{stats.empresasComRelatorio !== 1 ? "s" : ""} avaliado{stats.empresasComRelatorio !== 1 ? "s" : ""}
                     </div>
                   </div>
                 </div>
@@ -655,7 +655,7 @@ export default function AdminPage() {
                 style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                 <SectionHeading>Distribuição por Classificação</SectionHeading>
                 <p className="text-xs mb-4" style={{ color: "#9f9f9f" }}>
-                  {stats.empresasComRelatorio} empresa{stats.empresasComRelatorio !== 1 ? "s" : ""} com relatório gerado
+                  {stats.empresasComRelatorio} estabelecimento{stats.empresasComRelatorio !== 1 ? "s" : ""} com relatório gerado
                 </p>
                 <div className="space-y-4">
                   {([
@@ -669,7 +669,7 @@ export default function AdminPage() {
                       <div key={key}>
                         <div className="flex justify-between mb-1.5">
                           <span className="text-sm font-semibold" style={{ color: COR[key] }}>{label}</span>
-                          <span className="text-sm font-black" style={{ color: COR[key] }}>{n} empresa{n !== 1 ? "s" : ""} · {p}%</span>
+                          <span className="text-sm font-black" style={{ color: COR[key] }}>{n} estabelecimento{n !== 1 ? "s" : ""} · {p}%</span>
                         </div>
                         <div className="h-3 rounded-full" style={{ background: "#f1f1f1" }}>
                           <div className="h-3 rounded-full transition-all"
@@ -699,7 +699,7 @@ export default function AdminPage() {
               {/* Empresas em Maior Risco */}
               <div className="rounded-xl border bg-white px-6 py-5"
                 style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                <SectionHeading>Empresas em Maior Risco</SectionHeading>
+                <SectionHeading>Estabelecimentos em Maior Risco</SectionHeading>
                 {stats.topRisco.length === 0 ? (
                   <div className="py-8 text-center">
                     <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -843,11 +843,11 @@ export default function AdminPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="font-black text-lg" style={{ color: "#1a1a1a" }}>
-                Todas as Empresas <span className="text-base font-normal" style={{ color: "#9f9f9f" }}>({empresas.length})</span>
+                Todos os Estabelecimentos <span className="text-base font-normal" style={{ color: "#9f9f9f" }}>({empresas.length})</span>
               </h2>
               <input
                 value={busca} onChange={e => setBusca(e.target.value)}
-                placeholder="Buscar empresa ou email..."
+                placeholder="Buscar estabelecimento ou email..."
                 className="border rounded-lg px-3 py-2 text-sm w-64"
                 style={{ borderColor: "#e8e8e8", outline: "none" }}
               />
@@ -859,7 +859,7 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: "#f9fafb", borderBottom: "2px solid #f1f1f1" }}>
-                      {["Empresa", "Responsável", "Porte", "Respondentes", "Média", "Classificação", "Data", ""].map(h => (
+                      {["Estabelecimento", "Responsável", "Porte", "Respondentes", "Média", "Classificação", "Data", ""].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-xs font-semibold whitespace-nowrap"
                           style={{ color: "#6b7280" }}>{h}</th>
                       ))}
@@ -910,7 +910,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => setConfirmDelete({ id: e.id, nome: e.nome, respostas: e.totalRespostas })}
                               className="p-1.5 rounded-lg transition-colors hover:bg-red-50"
-                              title="Excluir empresa"
+                              title="Excluir estabelecimento"
                               style={{ color: "#dc2626" }}>
                               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -924,7 +924,7 @@ export default function AdminPage() {
                       <tr>
                         <td colSpan={8} className="px-4 py-12 text-center">
                           <svg className="w-8 h-8 mx-auto mb-2" style={{ color: "#d1d5db" }} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
-                          <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhuma empresa encontrada.</p>
+                          <p className="text-sm" style={{ color: "#9f9f9f" }}>Nenhum estabelecimento encontrado.</p>
                         </td>
                       </tr>
                     )}
@@ -1210,7 +1210,7 @@ export default function AdminPage() {
             </div>
 
             <h2 className="text-xl font-black text-center mb-1" style={{ color: "#1a1a1a" }}>
-              Excluir empresa?
+              Excluir estabelecimento?
             </h2>
             <p className="text-center text-sm mb-4" style={{ color: "#6b7280" }}>
               Esta ação é <strong>irreversível</strong>.
@@ -1224,7 +1224,7 @@ export default function AdminPage() {
               <div className="space-y-1 text-sm" style={{ color: "#7f1d1d" }}>
                 <div className="flex items-center gap-2">
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                  Empresa: <strong>{confirmDelete.nome}</strong>
+                  Estabelecimento: <strong>{confirmDelete.nome}</strong>
                 </div>
                 <div className="flex items-center gap-2">
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1236,7 +1236,7 @@ export default function AdminPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                  Usuário responsável (se não tiver outras empresas)
+                  Usuário responsável (se não tiver outros estabelecimentos)
                 </div>
               </div>
             </div>

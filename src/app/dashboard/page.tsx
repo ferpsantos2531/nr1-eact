@@ -97,15 +97,15 @@ export default function Dashboard() {
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
             <div className="title-line" />
-            <h1 className="text-2xl font-black mb-1">Minhas Empresas</h1>
+            <h1 className="text-2xl font-black mb-1">Meus Estabelecimentos</h1>
             <p className="text-sm" style={{ color: "#505050" }}>
               {empresas.length === 0
-                ? "Nenhuma empresa cadastrada ainda."
-                : `${empresas.length} empresa${empresas.length > 1 ? "s" : ""} cadastrada${empresas.length > 1 ? "s" : ""}`}
+                ? "Nenhum estabelecimento cadastrado ainda."
+                : `${empresas.length} estabelecimento${empresas.length > 1 ? "s" : ""} cadastrado${empresas.length > 1 ? "s" : ""}`}
             </p>
           </div>
           <button onClick={() => setShowNovaEmpresa(true)} className="btn-primary shrink-0">
-            + Nova empresa
+            + Novo estabelecimento
           </button>
         </div>
 
@@ -129,12 +129,12 @@ export default function Dashboard() {
         {empresas.length === 0 ? (
           <div className="card text-center py-16">
             <p className="text-4xl mb-4">🏢</p>
-            <h2 className="font-black text-lg mb-2">Cadastre sua primeira empresa</h2>
+            <h2 className="font-black text-lg mb-2">Cadastre seu primeiro estabelecimento</h2>
             <p className="text-sm mb-6" style={{ color: "#505050" }}>
-              Clique em "Nova empresa" para começar a avaliação NR-1.
+              Clique em "Novo estabelecimento" para começar a avaliação NR-1.
             </p>
             <button onClick={() => setShowNovaEmpresa(true)} className="btn-green">
-              + Cadastrar empresa
+              + Cadastrar estabelecimento
             </button>
           </div>
         ) : (
@@ -340,7 +340,13 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true); setErro("")
+    setErro("")
+    const cnpjDigits = form.cnpj.replace(/\D/g, "")
+    if (cnpjDigits.length !== 14) {
+      setErro("CNPJ inválido. Digite todos os 14 dígitos.")
+      return
+    }
+    setLoading(true)
     try {
       const res = await fetch("/api/empresa", {
         method: "POST",
@@ -363,17 +369,17 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
       style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
       <div className="w-full max-w-md card" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-black text-lg">Nova empresa</h2>
+          <h2 className="font-black text-lg">Novo estabelecimento</h2>
           <button onClick={onClose} className="text-2xl leading-none" style={{ color: "#9f9f9f" }}>×</button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* CNPJ primeiro para auto-preencher */}
           <div>
-            <label className="label">CNPJ</label>
+            <label className="label">CNPJ *</label>
             <div className="relative">
               <input className="input pr-10" value={form.cnpj} inputMode="numeric"
                 onChange={e => setForm({...form, cnpj: maskCNPJ(e.target.value)})}
-                placeholder="00.000.000/0001-00" autoFocus />
+                placeholder="00.000.000/0001-00" autoFocus required />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 {cnpjStatus === "loading" && (
                   <div className="w-4 h-4 border-2 rounded-full animate-spin"
@@ -394,7 +400,7 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
             {cnpjStatus === "ok" && (
               <div className="mt-1.5 px-3 py-1.5 rounded-lg text-xs space-y-0.5"
                 style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                <div className="font-semibold" style={{ color: "#15803d" }}>✓ CNPJ válido — empresa ativa</div>
+                <div className="font-semibold" style={{ color: "#15803d" }}>✓ CNPJ válido — estabelecimento ativo</div>
                 {form.razaoSocial && <div style={{ color: "#166534" }}>{form.razaoSocial}</div>}
                 {form.cidade && <div style={{ color: "#166534" }}>{form.cidade} — {form.estado}</div>}
               </div>
@@ -414,7 +420,7 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
           </div>
 
           <div>
-            <label className="label">Nome da empresa *</label>
+            <label className="label">Nome do estabelecimento *</label>
             <input className="input" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})}
               placeholder="Ex: Restaurante do João" required />
           </div>

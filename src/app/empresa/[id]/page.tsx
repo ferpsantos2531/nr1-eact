@@ -123,7 +123,7 @@ export default function EmpresaDashboard() {
           <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={22}
             style={{ filter: "brightness(0) invert(1)" }} />
           <button onClick={() => router.push("/dashboard")} className="text-green-100 text-sm hover:text-white">
-            ← Minhas empresas
+            ← Meus estabelecimentos
           </button>
         </div>
       </header>
