@@ -19,9 +19,9 @@ export async function GET(
 
     if (!empresa) return NextResponse.json({ error: "Empresa não encontrada" }, { status: 404 })
 
-    // Apenas o dono ou admin podem ver as respostas
-    if (empresa.usuarioId !== session.usuarioId && !session.isAdmin) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 })
+    // Apenas admin pode ver as respostas individuais
+    if (!session.isAdmin) {
+      return NextResponse.json({ error: "Acesso restrito a administradores" }, { status: 403 })
     }
 
     const respostas = await prisma.resposta.findMany({

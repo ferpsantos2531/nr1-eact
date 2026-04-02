@@ -53,6 +53,7 @@ export default function EmpresaDashboard() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [empresa, setEmpresa] = useState<Empresa | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [gerando, setGerando] = useState(false)
   const [erro, setErro] = useState("")
@@ -60,13 +61,15 @@ export default function EmpresaDashboard() {
   const [surveyUrl, setSurveyUrl] = useState("")
 
   useEffect(() => {
-    fetch(`/api/empresa?id=${id}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) { setErro(data.error); return }
-        setEmpresa(data)
-        setSurveyUrl(`${window.location.origin}/pesquisa/${data.surveyToken}`)
-      })
+    Promise.all([
+      fetch(`/api/empresa?id=${id}`).then(r => r.json()),
+      fetch("/api/auth/me").then(r => r.json()),
+    ]).then(([data, me]) => {
+      if (data.error) { setErro(data.error); return }
+      setEmpresa(data)
+      setSurveyUrl(`${window.location.origin}/pesquisa/${data.surveyToken}`)
+      setIsAdmin(me.isAdmin === true)
+    })
       .catch(() => setErro("Erro ao carregar dados"))
       .finally(() => setLoading(false))
   }, [id])
@@ -171,8 +174,8 @@ export default function EmpresaDashboard() {
           </div>
         </div>
 
-        {/* Botão ver respostas detalhadas */}
-        {(empresa?.totalRespostas ?? 0) > 0 && (
+        {/* Botão ver respostas detalhadas — somente admin */}
+        {isAdmin && (empresa?.totalRespostas ?? 0) > 0 && (
           <div className="mb-6">
             <button
               onClick={() => router.push(`/respostas/${id}`)}
