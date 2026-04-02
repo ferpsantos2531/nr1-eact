@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import GeoTab from "@/components/GeoTab"
 
 /* ─── Types ──────────────────────────────────────────────── */
 type Stats = {
@@ -185,7 +186,7 @@ function TypingDots() {
 /* ─── Main ───────────────────────────────────────────────── */
 export default function AdminPage() {
   const router = useRouter()
-  const [tab, setTab] = useState<"dashboard" | "empresas" | "usuarios" | "chat">("dashboard")
+  const [tab, setTab] = useState<"dashboard" | "empresas" | "usuarios" | "chat" | "geografico">("dashboard")
   const [stats, setStats] = useState<Stats | null>(null)
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [empresas, setEmpresas] = useState<Empresa[]>([])
@@ -522,6 +523,9 @@ export default function AdminPage() {
     { key: "chat", label: "Analista IA", badge: true, icon: (
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
     )},
+    { key: "geografico", label: "Geográfico", icon: (
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+    )},
   ] as const
 
   return (
@@ -543,21 +547,11 @@ export default function AdminPage() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.push("/admin/geografico")}
-              className="text-xs px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5"
-              style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-              </svg>
-              <span className="hidden sm:inline">Visão Geográfica</span>
-            </button>
-            <button onClick={() => router.push("/dashboard")}
-              className="text-xs px-3 py-1.5 rounded-lg font-medium"
-              style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>
-              ← Sair do Admin
-            </button>
-          </div>
+          <button onClick={() => router.push("/dashboard")}
+            className="text-xs px-3 py-1.5 rounded-lg font-medium"
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>
+            ← Sair do Admin
+          </button>
         </div>
       </header>
 
@@ -1194,6 +1188,11 @@ export default function AdminPage() {
           style={{ background: "#1a1a1a", color: "#fff" }}>
           ✓ {deleteResult}
         </div>
+      )}
+
+      {/* ── TAB: GEOGRÁFICO ─────────────────────────────── */}
+      {tab === "geografico" && (
+        <GeoTab />
       )}
 
       {/* Modal de confirmação de exclusão */}
