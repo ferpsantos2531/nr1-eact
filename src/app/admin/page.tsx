@@ -192,6 +192,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState("")
   const [busca, setBusca] = useState("")
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string; respostas: number } | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteResult, setDeleteResult] = useState<string | null>(null)
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -282,6 +285,25 @@ export default function AdminPage() {
     } finally {
       setChatLoading(false)
     }
+  }
+
+  async function excluirEmpresa() {
+    if (!confirmDelete) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/empresa/${confirmDelete.id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (!res.ok) { alert(data.error || "Erro ao excluir"); return }
+      setEmpresas(prev => prev.filter(e => e.id !== confirmDelete.id))
+      setDeleteResult(
+        `"${data.empresa}" excluída com sucesso. ` +
+        `${data.respostasExcluidas} resposta(s), ${data.relatoriosExcluidos} relatório(s) removidos.` +
+        (data.usuarioExcluido ? " Usuário sem outras empresas também foi excluído." : "")
+      )
+      setConfirmDelete(null)
+      setTimeout(() => setDeleteResult(null), 6000)
+    } catch { alert("Erro de conexão") }
+    finally { setDeleting(false) }
   }
 
   if (loading) return (
@@ -872,14 +894,25 @@ export default function AdminPage() {
                           {fmt(e.createdAt)}
                         </td>
                         <td className="px-4 py-3">
-                          {e.ultimoRelatorio && (
+                          <div className="flex items-center gap-2">
+                            {e.ultimoRelatorio && (
+                              <button
+                                onClick={() => router.push(`/relatorio/${e.ultimoRelatorio!.id}`)}
+                                className="text-xs px-2 py-1 rounded-lg font-medium whitespace-nowrap transition-colors"
+                                style={{ background: "#f0f7f3", color: "#006635" }}>
+                                Ver relatório
+                              </button>
+                            )}
                             <button
-                              onClick={() => router.push(`/relatorio/${e.ultimoRelatorio!.id}`)}
-                              className="text-xs px-2 py-1 rounded-lg font-medium whitespace-nowrap transition-colors"
-                              style={{ background: "#f0f7f3", color: "#006635" }}>
-                              Ver relatório
+                              onClick={() => setConfirmDelete({ id: e.id, nome: e.nome, respostas: e.totalRespostas })}
+                              className="p-1.5 rounded-lg transition-colors hover:bg-red-50"
+                              title="Excluir empresa"
+                              style={{ color: "#dc2626" }}>
+                              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             </button>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1144,6 +1177,80 @@ export default function AdminPage() {
         )}
 
       </div>
+
+      {/* Toast de resultado da exclusão */}
+      {deleteResult && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium max-w-lg text-center"
+          style={{ background: "#1a1a1a", color: "#fff" }}>
+          ✓ {deleteResult}
+        </div>
+      )}
+
+      {/* Modal de confirmação de exclusão */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={e => { if (e.target === e.currentTarget) setConfirmDelete(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            {/* Ícone de aviso */}
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "#fef2f2" }}>
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+
+            <h2 className="text-xl font-black text-center mb-1" style={{ color: "#1a1a1a" }}>
+              Excluir empresa?
+            </h2>
+            <p className="text-center text-sm mb-4" style={{ color: "#6b7280" }}>
+              Esta ação é <strong>irreversível</strong>.
+            </p>
+
+            {/* Detalhes do que será excluído */}
+            <div className="rounded-xl p-4 mb-5 space-y-2" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+              <p className="text-sm font-bold" style={{ color: "#dc2626" }}>
+                Será excluído permanentemente:
+              </p>
+              <div className="space-y-1 text-sm" style={{ color: "#7f1d1d" }}>
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Empresa: <strong>{confirmDelete.nome}</strong>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  {confirmDelete.respostas} resposta{confirmDelete.respostas !== 1 ? "s" : ""} de funcionários
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Todos os relatórios gerados
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Usuário responsável (se não tiver outras empresas)
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors"
+                style={{ background: "#f1f1f1", color: "#505050" }}>
+                Cancelar
+              </button>
+              <button onClick={excluirEmpresa} disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                style={{ background: "#dc2626", color: "#fff", opacity: deleting ? 0.7 : 1 }}>
+                {deleting
+                  ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Excluindo...</>
+                  : <><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Excluir definitivamente</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
