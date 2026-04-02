@@ -81,9 +81,11 @@ export default function RelatorioPage() {
   const plano = rel.planoAcaoIA
   const dims = [rel.mediaDimensao1, rel.mediaDimensao2, rel.mediaDimensao3]
 
+  const dataFormatada = new Date(rel.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+
   return (
     <main className="min-h-screen" style={{ background: "#f9fafb" }}>
-      {/* Header */}
+      {/* Header — tela */}
       <header style={{ background: "#006635" }} className="px-6 py-3 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Image src="/abrasel-logo.svg" alt="Abrasel" width={110} height={22}
@@ -101,13 +103,34 @@ export default function RelatorioPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-6 py-10">
+
+        {/* Cabeçalho de impressão — visível somente no PDF */}
+        <div className="print-page-header hidden print:flex">
+          {/* Logo Abrasel */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/abrasel-logo.svg" alt="Abrasel"
+            style={{ height: "30px", width: "auto" }} />
+          {/* Identificação do documento */}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "8pt", color: "#505050", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 600 }}>
+              Relatório de Avaliação — NR-1
+            </div>
+            <div style={{ fontSize: "12pt", fontWeight: 900, color: "#006635", marginTop: "2px" }}>
+              Gerenciamento de Riscos Psicossociais
+            </div>
+            <div style={{ fontSize: "8pt", color: "#9f9f9f", marginTop: "2px" }}>
+              Abrasel — Associação Brasileira de Bares e Restaurantes
+            </div>
+          </div>
+        </div>
+
         {/* Cabeçalho */}
         <div className="mb-8">
           <div className="title-line" />
           <p className="text-sm mb-1" style={{ color: "#505050" }}>Relatório de Avaliação NR-1</p>
           <h1 className="text-3xl font-black mb-2">{rel.empresa.nome}</h1>
           <p className="text-sm" style={{ color: "#9f9f9f" }}>
-            Gerado em {new Date(rel.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+            Gerado em {dataFormatada}
             {" · "}{rel.totalRespostas} respondentes
           </p>
         </div>
@@ -249,9 +272,16 @@ export default function RelatorioPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs mt-10 pt-6" style={{ borderTop: "1px solid #e8e8e8", color: "#9f9f9f" }}>
-          Relatório de Avaliação NR-1 · Gerado automaticamente por IA · Conexão Abrasel
-          · {new Date().getFullYear()}
+        <div className="print-footer text-center text-xs mt-10 pt-6" style={{ borderTop: "1px solid #e8e8e8", color: "#9f9f9f" }}>
+          <p>Relatório de Avaliação NR-1 · Gerado automaticamente por IA · Abrasel — {new Date().getFullYear()}</p>
+          <p className="mt-1">
+            Empresa: <strong style={{ color: "#1a1a1a" }}>{rel.empresa.nome}</strong>
+            {" · "}Gerado em {dataFormatada}
+            {" · "}{rel.totalRespostas} respondente{rel.totalRespostas !== 1 ? "s" : ""}
+          </p>
+          <p className="mt-1 print:block hidden" style={{ color: "#005028", fontWeight: 600 }}>
+            Documento gerado para fins de fiscalização e conformidade trabalhista — NR-1 / Portaria MTE nº 1.419/2024
+          </p>
         </div>
       </div>
     </main>

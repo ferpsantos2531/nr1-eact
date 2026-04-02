@@ -106,3 +106,99 @@ body {
   font-size: 12px;
   font-weight: 600;
 }
+
+/* ── Print ────────────────────────────────── */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 2cm 2.5cm;
+  }
+
+  body {
+    background: #fff !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    color: #1a1a1a !important;
+  }
+
+  main {
+    background: #fff !important;
+  }
+
+  /* Typography — justified body text, 1.5 spacing */
+  p, li {
+    text-align: justify !important;
+    line-height: 1.5 !important;
+  }
+
+  h1, h2, h3, h4, .font-black, .font-bold {
+    text-align: left !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Cards */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #d0d0d0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Full width */
+  .max-w-4xl, .max-w-5xl {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Avoid breaking score rows and action cards */
+  .space-y-6 > *, .space-y-3 > *, .space-y-2 > * {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Force color on score bars */
+  [style*="background: #dc2626"],
+  [style*="background: #d97706"],
+  [style*="background: #006635"] {
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Ensure colored backgrounds print */
+  .card[style], div[style] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page title area */
+  .print-page-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 24px !important;
+    border-bottom: 3px solid #006635 !important;
+  }
+
+  /* Keep print footer visible */
+  .print-footer {
+    display: block !important;
+    margin-top: 32px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e8e8e8 !important;
+    text-align: center !important;
+    font-size: 9pt !important;
+    color: #9f9f9f !important;
+  }
+
+  /* Section heading page break hints */
+  h2 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+}
