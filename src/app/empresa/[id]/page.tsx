@@ -257,27 +257,129 @@ export default function EmpresaDashboard() {
           <div className="card">
             <h2 className="font-bold mb-5">Histórico de relatórios</h2>
 
-            {/* Gráfico de evolução simples */}
-            {historico.length > 1 && (
-              <div className="mb-6 p-4 rounded-lg" style={{ background: "#f9fafb", border: "1px solid #e8e8e8" }}>
-                <p className="text-xs font-semibold mb-3" style={{ color: "#505050" }}>EVOLUÇÃO DA MÉDIA GERAL</p>
-                <div className="flex items-end gap-2 h-20">
-                  {[...historico].reverse().map((r, i) => {
-                    const pct = (r.mediaGeral / 5) * 100
-                    const color = r.mediaGeral >= 3.7 ? "#dc2626" : r.mediaGeral >= 2.3 ? "#d97706" : "#006635"
-                    return (
-                      <div key={r.id} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-xs font-bold" style={{ color }}>{r.mediaGeral.toFixed(1)}</span>
-                        <div className="w-full rounded-t-sm" style={{ height: `${Math.max(pct, 8)}%`, background: color, minHeight: 6 }} />
-                        <span className="text-xs" style={{ color: "#9f9f9f" }}>
-                          {new Date(r.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
-                        </span>
-                      </div>
-                    )
-                  })}
+            {/* Gráfico de evolução */}
+            {historico.length > 1 && (() => {
+              const data = [...historico].reverse()
+              const W = 560, H = 190
+              const PAD = { top: 32, bottom: 46, left: 36, right: 16 }
+              const cW = W - PAD.left - PAD.right
+              const cH = H - PAD.top - PAD.bottom
+
+              function yp(v: number) {
+                return PAD.top + (1 - (v - 1) / 4) * cH
+              }
+              function xp(i: number) {
+                return PAD.left + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2)
+              }
+
+              const y37 = yp(3.7), y23 = yp(2.3)
+              const pts = data.map((r, i) => ({
+                x: xp(i), y: yp(r.mediaGeral), val: r.mediaGeral,
+                label: new Date(r.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+                id: r.id,
+              }))
+
+              const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ")
+              const areaPath = `${linePath} L${pts[pts.length - 1].x},${PAD.top + cH} L${pts[0].x},${PAD.top + cH}Z`
+
+              const firstVal = pts[0].val, lastVal = pts[pts.length - 1].val
+              const trendDelta = lastVal - firstVal
+
+              function dotColor(v: number) {
+                return v >= 3.7 ? "#dc2626" : v >= 2.3 ? "#d97706" : "#006635"
+              }
+
+              return (
+                <div className="mb-6 p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e8e8e8" }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#505050" }}>
+                      Evolução da Média Geral
+                    </p>
+                    <span className="text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"
+                      style={{
+                        background: trendDelta < -0.05 ? "#dcfce7" : trendDelta > 0.05 ? "#fee2e2" : "#f1f5f9",
+                        color: trendDelta < -0.05 ? "#15803d" : trendDelta > 0.05 ? "#dc2626" : "#64748b",
+                      }}>
+                      {trendDelta < -0.05 ? "↘ Melhora" : trendDelta > 0.05 ? "↗ Piora" : "→ Estável"}
+                      {Math.abs(trendDelta) > 0.05 && (
+                        <span className="font-black ml-1">{Math.abs(trendDelta).toFixed(2)} pts</span>
+                      )}
+                    </span>
+                  </div>
+
+                  <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+                    {/* Zonas de fundo */}
+                    <rect x={PAD.left} y={PAD.top} width={cW} height={y37 - PAD.top} fill="#fef2f2" opacity={0.6} />
+                    <rect x={PAD.left} y={y37} width={cW} height={y23 - y37} fill="#fffbeb" opacity={0.6} />
+                    <rect x={PAD.left} y={y23} width={cW} height={PAD.top + cH - y23} fill="#f0fdf4" opacity={0.6} />
+
+                    {/* Linhas de referência */}
+                    <line x1={PAD.left} y1={y37} x2={PAD.left + cW} y2={y37} stroke="#dc2626" strokeWidth={1} strokeDasharray="5,3" opacity={0.35} />
+                    <line x1={PAD.left} y1={y23} x2={PAD.left + cW} y2={y23} stroke="#059669" strokeWidth={1} strokeDasharray="5,3" opacity={0.35} />
+
+                    {/* Labels de zona */}
+                    <text x={PAD.left + cW - 2} y={PAD.top + 10} textAnchor="end" fontSize={9} fill="#dc2626" opacity={0.75} fontWeight="600">Grave ≥3,7</text>
+                    <text x={PAD.left + cW - 2} y={(y37 + y23) / 2 + 3} textAnchor="end" fontSize={9} fill="#d97706" opacity={0.75} fontWeight="600">Crítico</text>
+                    <text x={PAD.left + cW - 2} y={PAD.top + cH - 4} textAnchor="end" fontSize={9} fill="#059669" opacity={0.75} fontWeight="600">Satisfatório &lt;2,3</text>
+
+                    {/* Eixo Y */}
+                    {[1, 2.3, 3.7, 5].map(v => (
+                      <g key={v}>
+                        <line x1={PAD.left - 3} y1={yp(v)} x2={PAD.left} y2={yp(v)} stroke="#c8c8c8" strokeWidth={1} />
+                        <text x={PAD.left - 5} y={yp(v) + 3} textAnchor="end" fontSize={8} fill="#9f9f9f">
+                          {v.toFixed(1).replace(".", ",")}
+                        </text>
+                      </g>
+                    ))}
+                    <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + cH} stroke="#e8e8e8" strokeWidth={1} />
+
+                    {/* Área + Linha */}
+                    <path d={areaPath} fill="#3b82f6" opacity={0.07} />
+                    <path d={linePath} fill="none" stroke="#1d4ed8" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+
+                    {/* Deltas entre pontos */}
+                    {pts.map((p, i) => {
+                      if (i === 0) return null
+                      const prev = pts[i - 1]
+                      const delta = p.val - prev.val
+                      const midX = (p.x + prev.x) / 2
+                      const midY = Math.min(p.y, prev.y) - 14
+                      const col = delta < -0.05 ? "#15803d" : delta > 0.05 ? "#dc2626" : "#94a3b8"
+                      const arrow = delta < -0.05 ? "↘" : delta > 0.05 ? "↗" : "→"
+                      return (
+                        <g key={i}>
+                          <rect x={midX - 14} y={midY - 9} width={28} height={13} rx={4}
+                            fill={delta < -0.05 ? "#dcfce7" : delta > 0.05 ? "#fee2e2" : "#f1f5f9"} />
+                          <text x={midX} y={midY} textAnchor="middle" fontSize={9} fill={col} fontWeight="bold">
+                            {arrow} {Math.abs(delta).toFixed(2)}
+                          </text>
+                        </g>
+                      )
+                    })}
+
+                    {/* Pontos e labels */}
+                    {pts.map((p, i) => (
+                      <g key={i} style={{ cursor: "pointer" }} onClick={() => router.push(`/relatorio/${p.id}`)}>
+                        <line x1={p.x} y1={PAD.top} x2={p.x} y2={PAD.top + cH} stroke="#e8e8e8" strokeWidth={1} strokeDasharray="2,4" opacity={0.6} />
+                        <text x={p.x} y={H - PAD.bottom + 14} textAnchor="middle" fontSize={10} fill="#6b7280" fontWeight="500">{p.label}</text>
+                        <text x={p.x} y={H - PAD.bottom + 26} textAnchor="middle" fontSize={9} fill="#c8c8c8">
+                          {i === pts.length - 1 ? "mais recente" : `rel. ${i + 1}`}
+                        </text>
+                        <circle cx={p.x} cy={p.y} r={9} fill={dotColor(p.val)} opacity={0.15} />
+                        <circle cx={p.x} cy={p.y} r={6} fill="white" stroke={dotColor(p.val)} strokeWidth={2.5} />
+                        <text x={p.x} y={p.y - 13} textAnchor="middle" fontSize={11} fill={dotColor(p.val)} fontWeight="bold">
+                          {p.val.toFixed(2).replace(".", ",")}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+
+                  <p className="text-xs mt-1" style={{ color: "#9f9f9f" }}>
+                    Clique em um ponto para ver o relatório · ↘ melhora · ↗ piora
+                  </p>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Lista */}
             <div className="space-y-3">
