@@ -319,6 +319,174 @@ export default function AdminPage() {
 
   const maxTendencia = stats?.tendenciaMensal.reduce((max, m) => Math.max(max, m.count), 1) ?? 1
 
+  /* Gráfico de evolução SVG */
+  function TendenciaLineChart({ data }: { data: Stats["tendenciaMensal"] }) {
+    const W = 560, H = 190
+    const PAD = { top: 32, bottom: 46, left: 36, right: 16 }
+    const cW = W - PAD.left - PAD.right
+    const cH = H - PAD.top - PAD.bottom
+    const MIN_V = 1, MAX_V = 5
+
+    function yp(v: number) {
+      return PAD.top + (1 - (v - MIN_V) / (MAX_V - MIN_V)) * cH
+    }
+    function xp(i: number) {
+      return PAD.left + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2)
+    }
+
+    const y37 = yp(3.7), y23 = yp(2.3)
+
+    const pts = data.map((d, i) => ({
+      x: xp(i), y: d.avgMediaGeral !== null && d.count > 0 ? yp(d.avgMediaGeral) : null,
+      val: d.avgMediaGeral !== null && d.count > 0 ? d.avgMediaGeral : null,
+      mes: d.mes, count: d.count,
+    }))
+    const validPts = pts.filter(p => p.y !== null)
+
+    const linePath = validPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ")
+    const areaPath = validPts.length > 1
+      ? `${linePath} L${validPts[validPts.length - 1].x},${PAD.top + cH} L${validPts[0].x},${PAD.top + cH}Z`
+      : ""
+
+    const firstVal = validPts[0]?.val ?? null
+    const lastVal = validPts[validPts.length - 1]?.val ?? null
+    const trendDelta = firstVal !== null && lastVal !== null && validPts.length > 1 ? lastVal - firstVal : null
+
+    function dotColor(v: number) {
+      return v >= 3.7 ? "#dc2626" : v >= 2.3 ? "#d97706" : "#059669"
+    }
+
+    return (
+      <div>
+        {/* Trend badge */}
+        {trendDelta !== null && (
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"
+              style={{
+                background: trendDelta < -0.05 ? "#dcfce7" : trendDelta > 0.05 ? "#fee2e2" : "#f1f5f9",
+                color: trendDelta < -0.05 ? "#15803d" : trendDelta > 0.05 ? "#dc2626" : "#64748b",
+              }}>
+              {trendDelta < -0.05 ? "↘ Melhora" : trendDelta > 0.05 ? "↗ Piora" : "→ Estável"}
+              <span className="font-black ml-1">
+                {trendDelta < -0.05 || trendDelta > 0.05
+                  ? `${Math.abs(trendDelta).toFixed(2)} pts`
+                  : "sem variação significativa"}
+              </span>
+              <span className="font-normal" style={{ color: "inherit", opacity: 0.7 }}>
+                {" "}no período
+              </span>
+            </span>
+            <span className="text-xs" style={{ color: "#9f9f9f" }}>
+              {fmtMes(data[0].mes)} → {fmtMes(data[data.length - 1].mes)}
+            </span>
+          </div>
+        )}
+
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+          {/* Background zones */}
+          <rect x={PAD.left} y={PAD.top} width={cW} height={y37 - PAD.top} fill="#fef2f2" opacity={0.6} />
+          <rect x={PAD.left} y={y37} width={cW} height={y23 - y37} fill="#fffbeb" opacity={0.6} />
+          <rect x={PAD.left} y={y23} width={cW} height={PAD.top + cH - y23} fill="#f0fdf4" opacity={0.6} />
+
+          {/* Zone border lines */}
+          <line x1={PAD.left} y1={y37} x2={PAD.left + cW} y2={y37} stroke="#dc2626" strokeWidth={1} strokeDasharray="5,3" opacity={0.35} />
+          <line x1={PAD.left} y1={y23} x2={PAD.left + cW} y2={y23} stroke="#059669" strokeWidth={1} strokeDasharray="5,3" opacity={0.35} />
+
+          {/* Zone labels on right */}
+          <text x={PAD.left + cW - 2} y={PAD.top + 10} textAnchor="end" fontSize={9} fill="#dc2626" opacity={0.75} fontWeight="600">Grave ≥3,7</text>
+          <text x={PAD.left + cW - 2} y={(y37 + y23) / 2 + 3} textAnchor="end" fontSize={9} fill="#d97706" opacity={0.75} fontWeight="600">Crítico</text>
+          <text x={PAD.left + cW - 2} y={PAD.top + cH - 4} textAnchor="end" fontSize={9} fill="#059669" opacity={0.75} fontWeight="600">Satisfatório &lt;2,3</text>
+
+          {/* Y axis ticks */}
+          {[1, 2, 2.3, 3, 3.7, 4, 5].map(v => (
+            <g key={v}>
+              <line x1={PAD.left - 3} y1={yp(v)} x2={PAD.left} y2={yp(v)} stroke="#c8c8c8" strokeWidth={1} />
+              {[1, 2.3, 3.7, 5].includes(v) && (
+                <text x={PAD.left - 5} y={yp(v) + 3} textAnchor="end" fontSize={8} fill="#9f9f9f">
+                  {v.toFixed(1).replace(".", ",")}
+                </text>
+              )}
+            </g>
+          ))}
+
+          {/* Y axis line */}
+          <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + cH} stroke="#e8e8e8" strokeWidth={1} />
+
+          {/* Area fill */}
+          {areaPath && <path d={areaPath} fill="#3b82f6" opacity={0.07} />}
+
+          {/* Line */}
+          {linePath && validPts.length > 1 && (
+            <path d={linePath} fill="none" stroke="#1d4ed8" strokeWidth={2.5}
+              strokeLinecap="round" strokeLinejoin="round" />
+          )}
+
+          {/* Delta arrows between consecutive valid points */}
+          {validPts.map((p, i) => {
+            if (i === 0) return null
+            const prev = validPts[i - 1]
+            if (prev.val === null || p.val === null) return null
+            const delta = p.val - prev.val
+            const midX = (p.x + prev.x) / 2
+            const midY = Math.min(p.y!, prev.y!) - 14
+            const deltaCol = delta < -0.05 ? "#15803d" : delta > 0.05 ? "#dc2626" : "#94a3b8"
+            const arrow = delta < -0.05 ? "↘" : delta > 0.05 ? "↗" : "→"
+            return (
+              <g key={i}>
+                <rect x={midX - 14} y={midY - 9} width={28} height={13} rx={4}
+                  fill={delta < -0.05 ? "#dcfce7" : delta > 0.05 ? "#fee2e2" : "#f1f5f9"} />
+                <text x={midX} y={midY} textAnchor="middle" fontSize={9} fill={deltaCol} fontWeight="bold">
+                  {arrow} {Math.abs(delta).toFixed(1)}
+                </text>
+              </g>
+            )
+          })}
+
+          {/* Data points */}
+          {pts.map((p, i) => (
+            <g key={i}>
+              {/* Vertical grid */}
+              <line x1={p.x} y1={PAD.top} x2={p.x} y2={PAD.top + cH}
+                stroke="#e8e8e8" strokeWidth={1} strokeDasharray="2,4" opacity={0.6} />
+
+              {/* Month label */}
+              <text x={p.x} y={H - PAD.bottom + 14} textAnchor="middle" fontSize={10} fill="#6b7280" fontWeight="500">
+                {fmtMes(p.mes)}
+              </text>
+              {/* Report count */}
+              <text x={p.x} y={H - PAD.bottom + 27} textAnchor="middle" fontSize={9} fill="#c8c8c8">
+                {p.count > 0 ? `${p.count} rel.` : "sem dados"}
+              </text>
+
+              {p.y !== null && p.val !== null && (
+                <>
+                  {/* Outer ring */}
+                  <circle cx={p.x} cy={p.y} r={9} fill={dotColor(p.val)} opacity={0.15} />
+                  {/* Dot */}
+                  <circle cx={p.x} cy={p.y} r={6} fill="white" stroke={dotColor(p.val)} strokeWidth={2.5} />
+                  {/* Value label */}
+                  <text x={p.x} y={p.y - 13} textAnchor="middle" fontSize={11} fill={dotColor(p.val)} fontWeight="bold">
+                    {p.val.toFixed(2).replace(".", ",")}
+                  </text>
+                </>
+              )}
+
+              {p.y === null && (
+                <text x={p.x} y={PAD.top + cH / 2} textAnchor="middle" fontSize={9} fill="#c8c8c8">—</text>
+              )}
+            </g>
+          ))}
+        </svg>
+
+        <div className="flex gap-4 mt-1 text-xs" style={{ color: "#9f9f9f" }}>
+          <span>↘ = melhora (valor menor)</span>
+          <span>↗ = piora (valor maior)</span>
+          <span>· Números acima dos pontos = média do mês</span>
+        </div>
+      </div>
+    )
+  }
+
   const TABS = [
     { key: "dashboard", label: "Visão Geral", icon: (
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -606,45 +774,15 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Row 5: Tendência Mensal */}
+            {/* Row 5: Evolução da Média Geral */}
             {stats.tendenciaMensal.length > 0 && (
               <div className="rounded-xl border bg-white px-6 py-5"
                 style={{ borderColor: "#e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                <SectionHeading>Tendência Mensal</SectionHeading>
+                <SectionHeading>Evolução da Média Geral</SectionHeading>
                 <p className="text-xs mb-4" style={{ color: "#9f9f9f" }}>
-                  Relatórios gerados e média geral por mês nos últimos 6 meses
+                  Média de risco psicossocial da plataforma nos últimos 6 meses — valor menor indica melhora
                 </p>
-                <div className="flex items-end gap-3 h-32">
-                  {stats.tendenciaMensal.map((m, i) => {
-                    const barHeight = maxTendencia > 0 ? (m.count / maxTendencia) * 100 : 0
-                    const cor = m.avgMediaGeral !== null
-                      ? m.avgMediaGeral >= 3.7 ? "#DC2626" : m.avgMediaGeral >= 2.3 ? "#D97706" : "#059669"
-                      : "#e8e8e8"
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <div className="text-xs font-bold" style={{ color: cor, fontSize: "0.65rem" }}>
-                          {m.avgMediaGeral !== null ? m.avgMediaGeral.toFixed(1) : ""}
-                        </div>
-                        <div className="w-full flex items-end" style={{ height: "80px" }}>
-                          <div className="w-full rounded-t-md transition-all"
-                            style={{
-                              height: m.count > 0 ? `${Math.max(barHeight, 8)}%` : "4px",
-                              background: m.count > 0 ? cor : "#e8e8e8",
-                            }} />
-                        </div>
-                        <div className="text-xs text-center" style={{ color: "#6b7280", fontSize: "0.65rem" }}>
-                          {fmtMes(m.mes)}
-                        </div>
-                        <div className="text-xs font-semibold" style={{ color: "#1a1a1a", fontSize: "0.7rem" }}>
-                          {m.count > 0 ? `${m.count}` : "—"}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className="mt-3 text-xs" style={{ color: "#9f9f9f" }}>
-                  Barras: volume de relatórios · Número acima: média geral do mês · Cor: classificação predominante
-                </div>
+                <TendenciaLineChart data={stats.tendenciaMensal} />
               </div>
             )}
 
