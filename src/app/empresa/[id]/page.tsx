@@ -158,17 +158,21 @@ export default function EmpresaDashboard() {
           <div className="card text-center">
             {evolucao !== null ? (
               <>
-                <div className="text-4xl font-black mb-1" style={{ color: evolucao <= 0 ? "#006635" : "#dc2626" }}>
-                  {evolucao <= 0 ? "↓" : "↑"} {Math.abs(evolucao).toFixed(2)}
+                <div className="text-4xl font-black mb-1"
+                  style={{ color: evolucao < 0 ? "#006635" : evolucao > 0 ? "#dc2626" : "#9f9f9f" }}>
+                  {evolucao < 0 ? "↑" : evolucao > 0 ? "↓" : "→"} {Math.abs(evolucao).toFixed(2)}
                 </div>
-                <div className="text-sm" style={{ color: "#505050" }}>
-                  {evolucao <= 0 ? "Melhora" : "Piora"} vs. anterior
+                <div className="text-xs font-semibold mb-0.5"
+                  style={{ color: evolucao < 0 ? "#006635" : evolucao > 0 ? "#dc2626" : "#9f9f9f" }}>
+                  {evolucao < 0 ? "Melhora" : evolucao > 0 ? "Piora" : "Estável"}
                 </div>
+                <div className="text-xs" style={{ color: "#9f9f9f" }}>Evolução vs Anterior</div>
               </>
             ) : (
               <>
-                <div className="text-4xl mb-1">📊</div>
-                <div className="text-sm" style={{ color: "#505050" }}>Gere 2+ relatórios para ver evolução</div>
+                <div className="text-3xl mb-1" style={{ color: "#c8c8c8" }}>—</div>
+                <div className="text-xs" style={{ color: "#9f9f9f" }}>Evolução vs Anterior</div>
+                <div className="text-xs mt-0.5" style={{ color: "#c8c8c8" }}>Gere 2+ relatórios</div>
               </>
             )}
           </div>
@@ -300,7 +304,7 @@ export default function EmpresaDashboard() {
                         background: trendDelta < -0.05 ? "#dcfce7" : trendDelta > 0.05 ? "#fee2e2" : "#f1f5f9",
                         color: trendDelta < -0.05 ? "#15803d" : trendDelta > 0.05 ? "#dc2626" : "#64748b",
                       }}>
-                      {trendDelta < -0.05 ? "↘ Melhora" : trendDelta > 0.05 ? "↗ Piora" : "→ Estável"}
+                      {trendDelta < -0.05 ? "↑ Melhora" : trendDelta > 0.05 ? "↓ Piora" : "→ Estável"}
                       {Math.abs(trendDelta) > 0.05 && (
                         <span className="font-black ml-1">{Math.abs(trendDelta).toFixed(2)} pts</span>
                       )}
@@ -345,7 +349,7 @@ export default function EmpresaDashboard() {
                       const midX = (p.x + prev.x) / 2
                       const midY = Math.min(p.y, prev.y) - 14
                       const col = delta < -0.05 ? "#15803d" : delta > 0.05 ? "#dc2626" : "#94a3b8"
-                      const arrow = delta < -0.05 ? "↘" : delta > 0.05 ? "↗" : "→"
+                      const arrow = delta < -0.05 ? "↑" : delta > 0.05 ? "↓" : "→"
                       return (
                         <g key={i}>
                           <rect x={midX - 14} y={midY - 9} width={28} height={13} rx={4}
@@ -375,7 +379,7 @@ export default function EmpresaDashboard() {
                   </svg>
 
                   <p className="text-xs mt-1" style={{ color: "#9f9f9f" }}>
-                    Clique em um ponto para ver o relatório · ↘ melhora · ↗ piora
+                    Clique em um ponto para ver o relatório · ↑ melhora · ↓ piora
                   </p>
                 </div>
               )
