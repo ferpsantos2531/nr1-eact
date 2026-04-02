@@ -100,172 +100,6 @@ const REGIAO_CONFIG: Record<string, { cor: string; bg: string; emoji: string }> 
   "Outros":       { cor: "#6b7280", bg: "#f9fafb", emoji: "📍" },
 }
 
-/* ─── Mapa de Calor Brasil ───────────────────────────────── */
-// Posições aproximadas dos centróides dos estados em viewport 480x470
-const STATE_POS: Record<string, { x: number; y: number; w: number; h: number }> = {
-  RR: { x: 130, y: 18,  w: 26, h: 16 },
-  AP: { x: 237, y: 28,  w: 26, h: 16 },
-  AM: { x:  90, y: 98,  w: 26, h: 16 },
-  PA: { x: 218, y: 90,  w: 26, h: 16 },
-  MA: { x: 318, y: 78,  w: 26, h: 16 },
-  CE: { x: 396, y: 52,  w: 26, h: 16 },
-  RN: { x: 436, y: 74,  w: 24, h: 15 },
-  PB: { x: 430, y: 94,  w: 24, h: 15 },
-  PE: { x: 412, y: 114, w: 26, h: 16 },
-  AL: { x: 430, y: 134, w: 24, h: 15 },
-  SE: { x: 420, y: 154, w: 24, h: 15 },
-  PI: { x: 352, y: 100, w: 26, h: 16 },
-  TO: { x: 280, y: 148, w: 26, h: 16 },
-  AC: { x:  36, y: 172, w: 26, h: 16 },
-  RO: { x: 120, y: 190, w: 26, h: 16 },
-  MT: { x: 192, y: 210, w: 26, h: 16 },
-  GO: { x: 268, y: 235, w: 26, h: 16 },
-  DF: { x: 302, y: 258, w: 22, h: 14 },
-  BA: { x: 358, y: 185, w: 26, h: 16 },
-  MG: { x: 318, y: 272, w: 26, h: 16 },
-  ES: { x: 378, y: 292, w: 24, h: 15 },
-  RJ: { x: 356, y: 318, w: 22, h: 14 },
-  SP: { x: 276, y: 308, w: 26, h: 16 },
-  MS: { x: 214, y: 298, w: 26, h: 16 },
-  PR: { x: 248, y: 352, w: 26, h: 16 },
-  SC: { x: 252, y: 378, w: 26, h: 16 },
-  RS: { x: 226, y: 412, w: 26, h: 16 },
-}
-
-function catColor(cat: string | null | undefined, alpha = 1): string {
-  if (!cat) return `rgba(200,200,200,${alpha})`
-  if (cat === "grave")       return `rgba(220,38,38,${alpha})`
-  if (cat === "critico")     return `rgba(217,119,6,${alpha})`
-  if (cat === "satisfatorio") return `rgba(5,150,105,${alpha})`
-  return `rgba(200,200,200,${alpha})`
-}
-
-function BrazilHeatMap({
-  porEstado,
-  selectedUF,
-  onSelect,
-}: {
-  porEstado: EstadoData[]
-  selectedUF: string | null
-  onSelect: (uf: string | null) => void
-}) {
-  const [hovered, setHovered] = useState<string | null>(null)
-
-  const byUF = Object.fromEntries(porEstado.map(e => [e.uf, e]))
-
-  const tooltip = hovered ? byUF[hovered] : null
-
-  return (
-    <div className="relative select-none">
-      <svg viewBox="0 0 480 460" className="w-full" style={{ maxHeight: 380 }}>
-        {/* Fundo sutil */}
-        <rect x="0" y="0" width="480" height="460" fill="#f9fafb" rx="12" />
-
-        {/* Título do mapa */}
-        <text x="14" y="455" fontSize="9" fill="#c8c8c8" fontWeight="500">Mapa de Calor · Risco Psicossocial por Estado</text>
-
-        {/* Estados */}
-        {Object.entries(STATE_POS).map(([uf, pos]) => {
-          const estado = byUF[uf]
-          const cat = estado?.categoria ?? null
-          const isSelected = selectedUF === uf
-          const isHovered = hovered === uf
-          const fillColor = catColor(cat, 0.85)
-          const strokeColor = isSelected ? "#1a1a1a" : isHovered ? "#555" : "rgba(255,255,255,0.7)"
-          const strokeW = isSelected ? 2.5 : isHovered ? 1.5 : 1
-
-          return (
-            <g key={uf}
-              style={{ cursor: "pointer" }}
-              onClick={() => onSelect(isSelected ? null : uf)}
-              onMouseEnter={() => setHovered(uf)}
-              onMouseLeave={() => setHovered(null)}>
-              {/* Sombra/glow para selecionado */}
-              {isSelected && (
-                <rect x={pos.x - 3} y={pos.y - 3} width={pos.w + 6} height={pos.h + 6}
-                  rx={6} fill={catColor(cat, 0.2)} />
-              )}
-              <rect x={pos.x} y={pos.y} width={pos.w} height={pos.h}
-                rx={4}
-                fill={fillColor}
-                stroke={strokeColor}
-                strokeWidth={strokeW} />
-              <text
-                x={pos.x + pos.w / 2}
-                y={pos.y + pos.h / 2 + 4}
-                textAnchor="middle"
-                fontSize={9}
-                fontWeight="700"
-                fill="#fff"
-                style={{ pointerEvents: "none", textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
-                {uf}
-              </text>
-              {/* Score abaixo da caixa quando hover */}
-              {isHovered && estado?.mediaGeral !== null && estado?.mediaGeral !== undefined && (
-                <text
-                  x={pos.x + pos.w / 2}
-                  y={pos.y + pos.h + 10}
-                  textAnchor="middle"
-                  fontSize={8}
-                  fontWeight="bold"
-                  fill={catColor(cat, 1)}>
-                  {estado.mediaGeral.toFixed(1)}
-                </text>
-              )}
-            </g>
-          )
-        })}
-
-        {/* Legenda */}
-        {[
-          { label: "Grave", color: "#dc2626", bg: "rgba(220,38,38,0.85)" },
-          { label: "Crítico", color: "#d97706", bg: "rgba(217,119,6,0.85)" },
-          { label: "Satisfatório", color: "#059669", bg: "rgba(5,150,105,0.85)" },
-          { label: "Sem dados", color: "#9f9f9f", bg: "rgba(200,200,200,0.85)" },
-        ].map((item, i) => (
-          <g key={item.label} transform={`translate(${14 + i * 108}, 438)`}>
-            <rect width={14} height={10} rx={2} fill={item.bg} />
-            <text x={18} y={9} fontSize={9} fill="#6b7280">{item.label}</text>
-          </g>
-        ))}
-      </svg>
-
-      {/* Tooltip flutuante */}
-      {tooltip && (
-        <div className="absolute pointer-events-none z-10 rounded-xl border shadow-xl px-4 py-3 text-xs"
-          style={{
-            background: "#fff",
-            borderColor: tooltip.categoria ? COR[tooltip.categoria] : "#e8e8e8",
-            borderTop: `3px solid ${tooltip.categoria ? COR[tooltip.categoria] : "#e8e8e8"}`,
-            top: 8, right: 8, minWidth: 180,
-          }}>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-base font-black" style={{ color: "#1a1a1a" }}>{tooltip.uf}</span>
-            <span style={{ color: "#9f9f9f" }}>{tooltip.nome}</span>
-          </div>
-          {tooltip.mediaGeral !== null ? (
-            <>
-              <div className="flex items-center gap-2 mb-1.5">
-                <ScoreNum v={tooltip.mediaGeral} />
-                <Badge cat={tooltip.categoria!} />
-              </div>
-              <DistBar pctG={tooltip.pctGrave} pctC={tooltip.pctCritico} pctS={tooltip.pctSatisfatorio} total={tooltip.empresasComRelatorio} />
-              <div className="mt-1" style={{ color: "#9f9f9f" }}>
-                {tooltip.totalEmpresas} empresa{tooltip.totalEmpresas !== 1 ? "s" : ""} · {tooltip.empresasComRelatorio} avaliada{tooltip.empresasComRelatorio !== 1 ? "s" : ""}
-              </div>
-            </>
-          ) : (
-            <div style={{ color: "#9f9f9f" }}>Sem relatórios · {tooltip.totalEmpresas} empresa{tooltip.totalEmpresas !== 1 ? "s" : ""}</div>
-          )}
-          <div className="mt-1.5 text-xs font-medium" style={{ color: "#9f9f9f" }}>
-            Clique para {selectedUF === tooltip.uf ? "deselecionar" : "ver detalhes"}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 /* ─── GeoTab principal ──────────────────────────────────── */
 export default function GeoTab() {
   const [data, setData] = useState<GeoData | null>(null)
@@ -328,118 +162,91 @@ export default function GeoTab() {
   return (
     <div className="space-y-6">
 
-      {/* Mapa de calor + KPIs lado a lado */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Título */}
+      <div>
+        <div className="title-line" />
+        <h2 className="text-xl font-black mb-1">Análise Geográfica</h2>
+        <p className="text-sm" style={{ color: "#9f9f9f" }}>
+          Distribuição e risco psicossocial por estado e município · {kpis.totalEstados} estado{kpis.totalEstados !== 1 ? "s" : ""} · {kpis.totalCidades} cidade{kpis.totalCidades !== 1 ? "s" : ""}
+        </p>
+      </div>
 
-        {/* Mapa */}
-        <div className="lg:col-span-2 rounded-xl border bg-white p-4" style={{ borderColor: "#e8e8e8" }}>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-black text-sm" style={{ color: "#1a1a1a" }}>Mapa de Calor por Estado</h3>
-              <p className="text-xs mt-0.5" style={{ color: "#9f9f9f" }}>
-                Passe o mouse sobre o estado para detalhes · clique para filtrar
-              </p>
-            </div>
-            {selectedUF && (
-              <button onClick={() => setSelectedUF(null)}
-                className="text-xs px-2.5 py-1 rounded-lg"
-                style={{ background: "#f1f1f1", color: "#505050" }}>
-                ✕ Limpar seleção
-              </button>
-            )}
-          </div>
-          <BrazilHeatMap
-            porEstado={porEstado}
-            selectedUF={selectedUF}
-            onSelect={uf => {
-              setSelectedUF(uf)
-              if (uf) setTab("estados")
-            }}
-          />
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div className="rounded-xl border bg-white px-5 py-4"
+          style={{ borderColor: "#e8e8e8", borderTop: `3px solid ${kpis.estadoPiorMedia ? COR[kpis.estadoPiorMedia.categoria] : "#e8e8e8"}` }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: "#9f9f9f" }}>MAIOR RISCO</p>
+          {kpis.estadoPiorMedia ? (
+            <>
+              <div className="text-3xl font-black" style={{ color: COR[kpis.estadoPiorMedia.categoria] }}>
+                {kpis.estadoPiorMedia.uf}
+              </div>
+              <div className="text-xs mt-1 truncate" style={{ color: "#505050" }}>{kpis.estadoPiorMedia.nome}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <ScoreNum v={kpis.estadoPiorMedia.media} />
+                <Badge cat={kpis.estadoPiorMedia.categoria} />
+              </div>
+            </>
+          ) : <div style={{ color: "#c8c8c8" }}>—</div>}
         </div>
 
-        {/* KPIs */}
-        <div className="space-y-3">
-          <div className="rounded-xl border bg-white px-4 py-3"
-            style={{ borderColor: "#e8e8e8", borderTop: `3px solid ${kpis.estadoPiorMedia ? COR[kpis.estadoPiorMedia.categoria] : "#e8e8e8"}` }}>
-            <p className="text-xs font-semibold mb-1.5" style={{ color: "#9f9f9f" }}>MAIOR RISCO</p>
-            {kpis.estadoPiorMedia ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-black" style={{ color: COR[kpis.estadoPiorMedia.categoria] }}>
-                    {kpis.estadoPiorMedia.uf}
-                  </div>
-                  <div className="text-xs truncate" style={{ color: "#505050" }}>{kpis.estadoPiorMedia.nome}</div>
-                </div>
-                <div className="text-right">
-                  <ScoreNum v={kpis.estadoPiorMedia.media} />
-                  <div className="mt-1"><Badge cat={kpis.estadoPiorMedia.categoria} /></div>
-                </div>
+        <div className="rounded-xl border bg-white px-5 py-4"
+          style={{ borderColor: "#e8e8e8", borderTop: `3px solid ${kpis.estadoMelhorMedia ? COR[kpis.estadoMelhorMedia.categoria] : "#e8e8e8"}` }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: "#9f9f9f" }}>MENOR RISCO</p>
+          {kpis.estadoMelhorMedia ? (
+            <>
+              <div className="text-3xl font-black" style={{ color: COR[kpis.estadoMelhorMedia.categoria] }}>
+                {kpis.estadoMelhorMedia.uf}
               </div>
-            ) : <span style={{ color: "#c8c8c8" }}>—</span>}
-          </div>
-
-          <div className="rounded-xl border bg-white px-4 py-3"
-            style={{ borderColor: "#e8e8e8", borderTop: `3px solid ${kpis.estadoMelhorMedia ? COR[kpis.estadoMelhorMedia.categoria] : "#e8e8e8"}` }}>
-            <p className="text-xs font-semibold mb-1.5" style={{ color: "#9f9f9f" }}>MENOR RISCO</p>
-            {kpis.estadoMelhorMedia ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-black" style={{ color: COR[kpis.estadoMelhorMedia.categoria] }}>
-                    {kpis.estadoMelhorMedia.uf}
-                  </div>
-                  <div className="text-xs truncate" style={{ color: "#505050" }}>{kpis.estadoMelhorMedia.nome}</div>
-                </div>
-                <div className="text-right">
-                  <ScoreNum v={kpis.estadoMelhorMedia.media} />
-                  <div className="mt-1"><Badge cat={kpis.estadoMelhorMedia.categoria} /></div>
-                </div>
+              <div className="text-xs mt-1 truncate" style={{ color: "#505050" }}>{kpis.estadoMelhorMedia.nome}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <ScoreNum v={kpis.estadoMelhorMedia.media} />
+                <Badge cat={kpis.estadoMelhorMedia.categoria} />
               </div>
-            ) : <span style={{ color: "#c8c8c8" }}>—</span>}
-          </div>
+            </>
+          ) : <div style={{ color: "#c8c8c8" }}>—</div>}
+        </div>
 
-          <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "#e8e8e8", borderTop: "3px solid #dc2626" }}>
-            <p className="text-xs font-semibold mb-1.5" style={{ color: "#9f9f9f" }}>CIDADE MAIS CRÍTICA</p>
-            {kpis.cidadeMaisCritica ? (
-              <>
-                <div className="font-black text-sm" style={{ color: "#1a1a1a" }}>{kpis.cidadeMaisCritica.cidade}</div>
-                <div className="text-xs" style={{ color: "#9f9f9f" }}>{kpis.cidadeMaisCritica.uf}</div>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <ScoreNum v={kpis.cidadeMaisCritica.mediaGeral} />
-                  {kpis.cidadeMaisCritica.categoria && <Badge cat={kpis.cidadeMaisCritica.categoria} />}
-                </div>
-              </>
-            ) : <span style={{ color: "#c8c8c8" }}>—</span>}
-          </div>
-
-          <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "#e8e8e8", borderTop: "3px solid #1d4ed8" }}>
-            <p className="text-xs font-semibold mb-1.5" style={{ color: "#9f9f9f" }}>MAIOR CONCENTRAÇÃO</p>
-            {kpis.concentracao ? (
-              <>
-                <div className="text-2xl font-black" style={{ color: "#1d4ed8" }}>{kpis.concentracao.percentual}%</div>
-                <div className="text-xs" style={{ color: "#505050" }}>das empresas em <strong>{kpis.concentracao.uf}</strong></div>
-                <div className="text-xs" style={{ color: "#9f9f9f" }}>{kpis.concentracao.nome}</div>
-              </>
-            ) : <span style={{ color: "#c8c8c8" }}>—</span>}
-            {kpis.empresasSemGeo > 0 && (
-              <div className="text-xs mt-2" style={{ color: "#d97706" }}>⚠ {kpis.empresasSemGeo} sem localização</div>
-            )}
-          </div>
-
-          {/* Resumo geral */}
-          <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "#e8e8e8" }}>
-            <p className="text-xs font-semibold mb-2" style={{ color: "#9f9f9f" }}>COBERTURA</p>
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="rounded-lg py-2" style={{ background: "#f9fafb" }}>
-                <div className="text-xl font-black" style={{ color: "#006635" }}>{kpis.totalEstados}</div>
-                <div className="text-xs" style={{ color: "#9f9f9f" }}>estados</div>
+        <div className="rounded-xl border bg-white px-5 py-4"
+          style={{ borderColor: "#e8e8e8", borderTop: "3px solid #dc2626" }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: "#9f9f9f" }}>CIDADE MAIS CRÍTICA</p>
+          {kpis.cidadeMaisCritica ? (
+            <>
+              <div className="text-sm font-black leading-tight" style={{ color: "#1a1a1a" }}>
+                {kpis.cidadeMaisCritica.cidade}
               </div>
-              <div className="rounded-lg py-2" style={{ background: "#f9fafb" }}>
-                <div className="text-xl font-black" style={{ color: "#006635" }}>{kpis.totalCidades}</div>
-                <div className="text-xs" style={{ color: "#9f9f9f" }}>municípios</div>
+              <div className="text-xs mt-0.5" style={{ color: "#9f9f9f" }}>{kpis.cidadeMaisCritica.uf}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <ScoreNum v={kpis.cidadeMaisCritica.mediaGeral} />
+                {kpis.cidadeMaisCritica.categoria && <Badge cat={kpis.cidadeMaisCritica.categoria} />}
               </div>
+              <div className="text-xs mt-1" style={{ color: "#9f9f9f" }}>
+                {kpis.cidadeMaisCritica.totalEmpresas} empresa{kpis.cidadeMaisCritica.totalEmpresas !== 1 ? "s" : ""}
+              </div>
+            </>
+          ) : <div style={{ color: "#c8c8c8" }}>—</div>}
+        </div>
+
+        <div className="rounded-xl border bg-white px-5 py-4"
+          style={{ borderColor: "#e8e8e8", borderTop: "3px solid #1d4ed8" }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: "#9f9f9f" }}>MAIOR CONCENTRAÇÃO</p>
+          {kpis.concentracao ? (
+            <>
+              <div className="text-3xl font-black" style={{ color: "#1d4ed8" }}>
+                {kpis.concentracao.percentual}%
+              </div>
+              <div className="text-xs mt-1" style={{ color: "#505050" }}>
+                das empresas em <strong>{kpis.concentracao.uf}</strong>
+              </div>
+              <div className="text-xs mt-1" style={{ color: "#9f9f9f" }}>{kpis.concentracao.nome}</div>
+            </>
+          ) : <div style={{ color: "#c8c8c8" }}>—</div>}
+          {kpis.empresasSemGeo > 0 && (
+            <div className="text-xs mt-2" style={{ color: "#d97706" }}>
+              ⚠ {kpis.empresasSemGeo} sem localização
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -646,7 +453,7 @@ export default function GeoTab() {
                 <div className="text-4xl mb-3">🗺</div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#505050" }}>Selecione um estado</p>
                 <p className="text-xs" style={{ color: "#9f9f9f" }}>
-                  Clique no mapa ou em qualquer linha para ver detalhes por município e dimensão.
+                  Clique em qualquer linha para ver o detalhamento por município e dimensão.
                 </p>
               </div>
             )}
@@ -681,9 +488,9 @@ export default function GeoTab() {
                     </div>
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       {[
-                        { label: "Total",     val: r.totalEmpresas,       cor: "#1a1a1a" },
-                        { label: "Avaliadas", val: r.empresasComRelatorio, cor: "#006635" },
-                        { label: "Pendentes", val: r.empresasSemRelatorio, cor: r.empresasSemRelatorio > 0 ? "#d97706" : "#9f9f9f" },
+                        { label: "Total",     val: r.totalEmpresas,        cor: "#1a1a1a" },
+                        { label: "Avaliadas", val: r.empresasComRelatorio,  cor: "#006635" },
+                        { label: "Pendentes", val: r.empresasSemRelatorio,  cor: r.empresasSemRelatorio > 0 ? "#d97706" : "#9f9f9f" },
                       ].map(item => (
                         <div key={item.label} className="text-center p-2 rounded-lg" style={{ background: "#f9fafb" }}>
                           <div className="text-lg font-black" style={{ color: item.cor }}>{item.val}</div>
