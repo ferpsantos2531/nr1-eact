@@ -1,7 +1,8 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { consultarCNPJ } from "@/lib/cnpj"
 
 type Empresa = {
   id: string
@@ -307,9 +308,35 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
   onClose: () => void
   onSuccess: (empresa: Empresa) => void
 }) {
-  const [form, setForm] = useState({ nome: "", cnpj: "", telefone: "", tamanho: "" })
+  const [form, setForm] = useState({
+    nome: "", cnpj: "", telefone: "", tamanho: "",
+    razaoSocial: "", cidade: "", estado: "",
+  })
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState("")
+  const [cnpjStatus, setCnpjStatus] = useState<"idle" | "loading" | "ok" | "inativo" | "error">("idle")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const digits = form.cnpj.replace(/\D/g, "")
+    if (digits.length < 14) { setCnpjStatus("idle"); return }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      setCnpjStatus("loading")
+      const data = await consultarCNPJ(digits)
+      if (!data) { setCnpjStatus("error"); return }
+      setCnpjStatus(data.ativo ? "ok" : "inativo")
+      const nome = data.nomeFantasia || data.razaoSocial
+      setForm(prev => ({
+        ...prev,
+        nome: prev.nome || nome,
+        razaoSocial: data.razaoSocial,
+        cidade: data.cidade,
+        estado: data.estado,
+      }))
+    }, 400)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [form.cnpj])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -340,32 +367,75 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
           <button onClick={onClose} className="text-2xl leading-none" style={{ color: "#9f9f9f" }}>×</button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* CNPJ primeiro para auto-preencher */}
+          <div>
+            <label className="label">CNPJ</label>
+            <div className="relative">
+              <input className="input pr-10" value={form.cnpj} inputMode="numeric"
+                onChange={e => setForm({...form, cnpj: maskCNPJ(e.target.value)})}
+                placeholder="00.000.000/0001-00" autoFocus />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {cnpjStatus === "loading" && (
+                  <div className="w-4 h-4 border-2 rounded-full animate-spin"
+                    style={{ borderColor: "#006635", borderTopColor: "transparent" }} />
+                )}
+                {cnpjStatus === "ok" && (
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#006635" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {(cnpjStatus === "error" || cnpjStatus === "inativo") && (
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            {cnpjStatus === "ok" && (
+              <div className="mt-1.5 px-3 py-1.5 rounded-lg text-xs space-y-0.5"
+                style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <div className="font-semibold" style={{ color: "#15803d" }}>✓ CNPJ válido — empresa ativa</div>
+                {form.razaoSocial && <div style={{ color: "#166534" }}>{form.razaoSocial}</div>}
+                {form.cidade && <div style={{ color: "#166534" }}>{form.cidade} — {form.estado}</div>}
+              </div>
+            )}
+            {cnpjStatus === "inativo" && (
+              <div className="mt-1.5 px-3 py-1.5 rounded-lg text-xs"
+                style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e" }}>
+                ⚠ CNPJ encontrado mas consta como <strong>inativa</strong> na Receita Federal.
+              </div>
+            )}
+            {cnpjStatus === "error" && (
+              <div className="mt-1.5 px-3 py-1.5 rounded-lg text-xs"
+                style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}>
+                CNPJ não encontrado na Receita Federal.
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="label">Nome da empresa *</label>
             <input className="input" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})}
-              placeholder="Ex: Restaurante do João" required autoFocus />
+              placeholder="Ex: Restaurante do João" required />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">CNPJ</label>
-              <input className="input" value={form.cnpj} inputMode="numeric"
-                onChange={e => setForm({...form, cnpj: maskCNPJ(e.target.value)})} placeholder="00.000.000/0001-00" />
-            </div>
             <div>
               <label className="label">Telefone</label>
               <input className="input" value={form.telefone} inputMode="numeric"
                 onChange={e => setForm({...form, telefone: maskPhone(e.target.value)})} placeholder="(11) 99999-9999" />
             </div>
+            <div>
+              <label className="label">Nº de funcionários</label>
+              <select className="input" value={form.tamanho} onChange={e => setForm({...form, tamanho: e.target.value})}>
+                <option value="">Selecione...</option>
+                {[["1-10","1–10"],["11-50","11–50"],["51-200","51–200"],["201-500","201–500"],["500+","500+"]].map(([v,l]) => (
+                  <option key={v} value={v}>{l} funcionários</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="label">Nº de funcionários</label>
-            <select className="input" value={form.tamanho} onChange={e => setForm({...form, tamanho: e.target.value})}>
-              <option value="">Selecione...</option>
-              {[["1-10","1–10"],["11-50","11–50"],["51-200","51–200"],["201-500","201–500"],["500+","500+"]].map(([v,l]) => (
-                <option key={v} value={v}>{l} funcionários</option>
-              ))}
-            </select>
-          </div>
+
           {erro && <p className="text-sm" style={{ color: "#dc2626" }}>{erro}</p>}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-outline flex-1">Cancelar</button>

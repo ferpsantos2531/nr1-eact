@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const session = await getSession()
     if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
 
-    const { nome, cnpj, telefone, tamanho } = await req.json()
+    const { nome, cnpj, telefone, tamanho, razaoSocial, cidade, estado } = await req.json()
     if (!nome) return NextResponse.json({ error: "Nome da empresa é obrigatório" }, { status: 400 })
 
     const empresa = await prisma.empresa.create({
@@ -18,6 +18,9 @@ export async function POST(req: NextRequest) {
         cnpj: cnpj || null,
         telefone: telefone || null,
         tamanho: tamanho || null,
+        razaoSocial: razaoSocial || null,
+        cidade: cidade || null,
+        estado: estado || null,
         surveyToken: uuidv4(),
         usuarioId: session.usuarioId,
       },

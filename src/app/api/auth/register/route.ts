@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid"
 
 export async function POST(req: NextRequest) {
   try {
-    const { nomeEmpresa, email, senha, cnpj, telefone, tamanho } = await req.json()
+    const { nomeEmpresa, email, senha, cnpj, telefone, tamanho, razaoSocial, cidade, estado } = await req.json()
 
     if (!nomeEmpresa || !email || !senha) {
       return NextResponse.json({ error: "Nome da empresa, email e senha são obrigatórios" }, { status: 400 })
@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
         cnpj: cnpj || null,
         telefone: telefone || null,
         tamanho: tamanho || null,
+        razaoSocial: razaoSocial || null,
+        cidade: cidade || null,
+        estado: estado || null,
         surveyToken: uuidv4(),
         usuarioId: usuario.id,
       },

@@ -23,6 +23,9 @@ model Empresa {
   cnpj        String?
   telefone    String?
   tamanho     String?
+  razaoSocial String?
+  cidade      String?
+  estado      String?
   surveyToken String      @unique
   usuarioId   String
   usuario     Usuario     @relation(fields: [usuarioId], references: [id])
