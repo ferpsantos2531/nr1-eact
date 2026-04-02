@@ -286,6 +286,23 @@ function TrocarSenhaModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+function maskCNPJ(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 14)
+  if (d.length <= 2) return d
+  if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`
+  if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`
+  if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`
+  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`
+}
+
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 11)
+  if (d.length <= 2) return d.length ? `(${d}` : ""
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+}
+
 function NovaEmpresaModal({ onClose, onSuccess }: {
   onClose: () => void
   onSuccess: (empresa: Empresa) => void
@@ -331,11 +348,13 @@ function NovaEmpresaModal({ onClose, onSuccess }: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">CNPJ</label>
-              <input className="input" value={form.cnpj} onChange={e => setForm({...form, cnpj: e.target.value})} placeholder="00.000.000/0001-00" />
+              <input className="input" value={form.cnpj} inputMode="numeric"
+                onChange={e => setForm({...form, cnpj: maskCNPJ(e.target.value)})} placeholder="00.000.000/0001-00" />
             </div>
             <div>
               <label className="label">Telefone</label>
-              <input className="input" value={form.telefone} onChange={e => setForm({...form, telefone: e.target.value})} placeholder="(11) 99999-9999" />
+              <input className="input" value={form.telefone} inputMode="numeric"
+                onChange={e => setForm({...form, telefone: maskPhone(e.target.value)})} placeholder="(11) 99999-9999" />
             </div>
           </div>
           <div>
