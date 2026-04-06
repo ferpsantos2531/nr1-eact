@@ -244,15 +244,16 @@ export default function PesquisaPage() {
             return (
               <button key={i}
                 onClick={() => acessivel && setDimAtual(i)}
-                className="flex-1 py-2.5 px-2 rounded-xl text-center transition-all text-xs font-semibold"
+                className="flex-1 py-2 px-1 rounded-xl text-center transition-all font-semibold"
                 style={{
                   background: ativa ? "#006635" : completa ? "#e8f5ee" : "#fff",
                   color: ativa ? "#fff" : completa ? "#006635" : "#9f9f9f",
                   border: `1.5px solid ${ativa ? "#006635" : completa ? "#86efac" : "#e8e8e8"}`,
                   cursor: acessivel ? "pointer" : "default",
                   opacity: !acessivel ? 0.5 : 1,
+                  fontSize: "0.65rem",
                 }}>
-                <div className="text-sm mb-0.5">{completa ? "✓" : `${i + 1}`}</div>
+                <div className="text-sm mb-0.5 leading-none">{completa ? "✓" : `${i + 1}`}</div>
                 <div className="truncate leading-tight">{d.nome.split(" ")[0]}</div>
               </button>
             )
@@ -315,6 +316,16 @@ export default function PesquisaPage() {
                   </p>
                 </div>
 
+                {/* Legenda da escala */}
+                <div className="grid grid-cols-5 gap-1.5 mb-1">
+                  {ESCALA.map(op => (
+                    <div key={op.valor} className="text-center leading-tight"
+                      style={{ color: "#9f9f9f", fontSize: "0.6rem" }}>
+                      {op.label}
+                    </div>
+                  ))}
+                </div>
+
                 {/* Escala 1–5 */}
                 <div className="grid grid-cols-5 gap-1.5">
                   {ESCALA.map(op => {
@@ -322,18 +333,14 @@ export default function PesquisaPage() {
                     return (
                       <button key={op.valor} type="button"
                         onClick={() => setResposta(qi, op.valor)}
-                        className="py-3 rounded-xl transition-all duration-150 active:scale-95"
+                        className="py-3.5 rounded-xl transition-all duration-150 active:scale-95"
                         style={{
                           background: selecionado ? "#006635" : "#f9fafb",
                           color: selecionado ? "#fff" : "#505050",
                           border: `1.5px solid ${selecionado ? "#006635" : "#e8e8e8"}`,
                           boxShadow: selecionado ? "0 2px 8px rgba(0,102,53,0.25)" : "none",
                         }}>
-                        <div className="text-base font-black leading-none">{op.valor}</div>
-                        <div className="text-xs mt-1 leading-tight"
-                          style={{ color: selecionado ? "rgba(255,255,255,0.85)" : "#9f9f9f", fontSize: "0.65rem" }}>
-                          {op.label}
-                        </div>
+                        <div className="text-lg font-black leading-none">{op.valor}</div>
                       </button>
                     )
                   })}
@@ -361,13 +368,13 @@ export default function PesquisaPage() {
           )}
 
           {/* Mini-progresso da seção atual */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs" style={{ color: "#9f9f9f" }}>
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <span className="text-xs shrink-0" style={{ color: "#9f9f9f" }}>
               {respondidosDaDim}/{questoesDaDim.length} nesta seção
             </span>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap justify-end">
               {questoesDaDim.map(qi => (
-                <div key={qi} className="w-2 h-2 rounded-full transition-all"
+                <div key={qi} className="w-2 h-2 rounded-full transition-all shrink-0"
                   style={{ background: respostas[qi] !== null ? "#006635" : "#e8e8e8" }} />
               ))}
             </div>
