@@ -14,7 +14,7 @@ export async function GET(
   try {
     const empresa = await prisma.empresa.findUnique({
       where: { id },
-      select: { id: true, nome: true, cnpj: true, tamanho: true, usuarioId: true },
+      select: { id: true, surveyToken: true, usuarioId: true },
     })
 
     if (!empresa) return NextResponse.json({ error: "Empresa não encontrada" }, { status: 404 })

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { signToken, COOKIE_NAME } from "@/lib/auth"
+import { signToken, COOKIE_NAME, COOKIE_OPTIONS } from "@/lib/auth"
 
 /**
- * POST /api/admin/auth/login
+ * POST /nr1/api/admin/auth/login
  *
  * Login exclusivo para administradores da plataforma NR-1.
- * Rejeita qualquer usuário sem isAdmin = true, mesmo com credenciais válidas.
- * Não faz parte do fluxo SSO — credenciais sempre locais.
+ * Usa a tabela Admin (email + senha locais) — completamente isolado do SSO/Conexão.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -21,31 +20,25 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const usuario = await prisma.usuario.findUnique({ where: { email } })
+    const admin = await prisma.admin.findUnique({ where: { email } })
 
-    // Mensagem genérica para não revelar se o e-mail existe
+    // Mensagem genérica — não revela se o e-mail existe
     const erroGenerico = NextResponse.json(
-      { error: "Credenciais inválidas ou sem permissão de administrador" },
+      { error: "Credenciais inválidas" },
       { status: 401 }
     )
 
-    if (!usuario || !usuario.senha) return erroGenerico
+    if (!admin) return erroGenerico
 
-    const senhaCorreta = await bcrypt.compare(senha, usuario.senha)
+    const senhaCorreta = await bcrypt.compare(senha, admin.senha)
     if (!senhaCorreta) return erroGenerico
 
-    // Verificação crítica: somente admins passam
-    if (!usuario.isAdmin) return erroGenerico
-
-    const token = await signToken({ usuarioId: usuario.id, isAdmin: true })
+    const token = await signToken({ usuarioId: admin.id, isAdmin: true })
 
     const res = NextResponse.json({ ok: true })
     res.cookies.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 dias
-      path: "/",
+      ...COOKIE_OPTIONS,
+      maxAge: 60 * 60 * 8, // 8 horas
     })
 
     return res

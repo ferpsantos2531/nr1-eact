@@ -27,7 +27,7 @@ export async function GET() {
         mediaDimensao3: true,
         categoria: true,
         createdAt: true,
-        empresa: { select: { nome: true } },
+        empresaId: true,   // nome vem do Conexão — usamos o ID como label
       },
     }),
   ])
@@ -42,8 +42,7 @@ export async function GET() {
       mediaDimensao1: true,
       mediaDimensao2: true,
       mediaDimensao3: true,
-      empresaId: true,
-      empresa: { select: { nome: true } },
+      empresaId: true,   // nome vem do Conexão
     },
   })
 
@@ -72,7 +71,7 @@ export async function GET() {
 
   // Últimos 8 relatórios para linha do tempo
   const ultimosRelatoriosTimeline = relatorios.slice(0, 8).map(r => ({
-    empresa: r.empresa.nome,
+    empresa: `Empresa ${r.empresaId.slice(0, 8)}`,  // nome vem do Conexão
     media: r.mediaGeral,
     categoria: r.categoria,
     data: r.createdAt,
@@ -82,13 +81,13 @@ export async function GET() {
   const topRisco = [...ultimosRelatorios]
     .sort((a, b) => b.mediaGeral - a.mediaGeral)
     .slice(0, 5)
-    .map(r => ({ nome: r.empresa.nome, media: r.mediaGeral, categoria: r.categoria }))
+    .map(r => ({ nome: `Empresa ${r.empresaId.slice(0, 8)}`, media: r.mediaGeral, categoria: r.categoria }))
 
   // ── NEW: Top Saudáveis (top 5 lowest mediaGeral = healthiest) ──
   const topSaudaveis = [...ultimosRelatorios]
     .sort((a, b) => a.mediaGeral - b.mediaGeral)
     .slice(0, 5)
-    .map(r => ({ nome: r.empresa.nome, media: r.mediaGeral, categoria: r.categoria }))
+    .map(r => ({ nome: `Empresa ${r.empresaId.slice(0, 8)}`, media: r.mediaGeral, categoria: r.categoria }))
 
   // ── NEW: Questões Críticas — per-question averages across all Respostas ──
   const todasRespostas = await prisma.resposta.findMany({

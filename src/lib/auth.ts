@@ -7,10 +7,18 @@ const secret = new TextEncoder().encode(
 
 export const COOKIE_NAME = "nr1_session"
 
+// Cookie scoped para /nr1 — mesmo domínio que o Conexão, path isolado.
+export const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/nr1",
+}
+
 export async function signToken(payload: { usuarioId: string; isAdmin?: boolean }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("30d")
+    .setExpirationTime("8h")   // Sessão de 8h — alinhada ao dia de trabalho
     .sign(secret)
 }
 
@@ -28,4 +36,10 @@ export async function getSession(): Promise<{ usuarioId: string; isAdmin: boolea
   const token = cookieStore.get(COOKIE_NAME)?.value
   if (!token) return null
   return verifyToken(token)
+}
+
+// Retorna o cookie next-auth.session-token do Conexão (disponível pois somos o mesmo domínio)
+export async function getConexaoToken(): Promise<string | null> {
+  const cookieStore = await cookies()
+  return cookieStore.get("next-auth.session-token")?.value ?? null
 }

@@ -1,16 +1,16 @@
 /**
  * scripts/create-admin.ts
  *
- * Cria ou promove um usuário administrador no banco de dados NR-1.
+ * Cria ou atualiza um administrador da plataforma NR-1.
+ * Admins usam email + senha locais (independente do Conexão/SSO).
  *
  * Uso:
  *   npx ts-node scripts/create-admin.ts --email admin@abrasel.com.br --senha "SenhaSegura123!"
  *
- * Ou via npm script (adicionar em package.json):
- *   "create-admin": "ts-node scripts/create-admin.ts"
+ * Ou via npm script:
+ *   npm run create-admin -- --email admin@abrasel.com.br --senha "SenhaSegura123!"
  *
- * Se o e-mail já existir no banco, o script apenas promove o usuário a admin
- * e atualiza a senha (se --senha for fornecida).
+ * Se o e-mail já existir, o script atualiza a senha.
  */
 
 import { PrismaClient } from "@prisma/client"
@@ -48,24 +48,16 @@ async function main() {
 
   const hash = await bcrypt.hash(senha, 10)
 
-  const usuario = await prisma.usuario.upsert({
+  const admin = await prisma.admin.upsert({
     where: { email },
-    update: {
-      senha: hash,
-      isAdmin: true,
-    },
-    create: {
-      email,
-      senha: hash,
-      isAdmin: true,
-    },
+    update: { senha: hash },
+    create: { email, senha: hash },
   })
 
   console.log(`✅  Admin configurado com sucesso!`)
-  console.log(`   ID:      ${usuario.id}`)
-  console.log(`   E-mail:  ${usuario.email}`)
-  console.log(`   isAdmin: ${usuario.isAdmin}`)
-  console.log(`\n   Acesse: /admin/login\n`)
+  console.log(`   ID:     ${admin.id}`)
+  console.log(`   Email:  ${admin.email}`)
+  console.log(`\n   Acesse: /nr1/admin/login\n`)
 }
 
 main()

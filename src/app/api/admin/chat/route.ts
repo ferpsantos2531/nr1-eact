@@ -21,8 +21,7 @@ export async function POST(req: NextRequest) {
     prisma.empresa.findMany({
       select: {
         id: true,
-        nome: true,
-        tamanho: true,
+        // nome e tamanho vêm do Conexão — usamos o id como identificador aqui
         _count: { select: { respostas: true } },
         relatorios: {
           orderBy: { createdAt: "desc" },
@@ -86,10 +85,12 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build system prompt ────────────────────────────────────────────────────
+  // nome/tamanho vêm do Conexão — usamos o ID como identificador no contexto da IA
   const empresasDetalhes = empresas.map(e => {
+    const label = `Empresa ${e.id.slice(0, 8)}`
     const rel = e.relatorios[0]
-    if (!rel) return `- ${e.nome} (${e.tamanho ?? "porte não informado"}): sem relatório. Respondentes coletados: ${e._count.respostas}`
-    return `- ${e.nome} (${e.tamanho ?? "porte não informado"}): Média ${rel.mediaGeral.toFixed(2)}, Classificação: ${rel.categoria}, Respondentes: ${rel.totalRespostas}, Dim1=${rel.mediaDimensao1.toFixed(2)}, Dim2=${rel.mediaDimensao2.toFixed(2)}, Dim3=${rel.mediaDimensao3.toFixed(2)}`
+    if (!rel) return `- ${label}: sem relatório. Respondentes coletados: ${e._count.respostas}`
+    return `- ${label}: Média ${rel.mediaGeral.toFixed(2)}, Classificação: ${rel.categoria}, Respondentes: ${rel.totalRespostas}, Dim1=${rel.mediaDimensao1.toFixed(2)}, Dim2=${rel.mediaDimensao2.toFixed(2)}, Dim3=${rel.mediaDimensao3.toFixed(2)}`
   }).join("\n")
 
   const questoesCriticasTexto = top10Criticas

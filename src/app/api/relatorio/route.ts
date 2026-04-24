@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
       return calcularMedia(valores)
     })
 
-    const planoAcao = await gerarPlanoAcaoIA(resultado, empresa.nome, null, mediasPorQuestao)
+    // nome da empresa vem do Conexão — usamos o ID como fallback para a IA
+    const planoAcao = await gerarPlanoAcaoIA(resultado, empresa.id, null, mediasPorQuestao)
 
     // Sempre cria um novo registro (histórico completo)
     const relatorio = await prisma.relatorio.create({

@@ -15,7 +15,7 @@ export async function DELETE(
   try {
     const empresa = await prisma.empresa.findUnique({
       where: { id },
-      select: { id: true, nome: true, usuarioId: true },
+      select: { id: true, usuarioId: true },
     })
     if (!empresa) return NextResponse.json({ error: "Empresa não encontrada" }, { status: 404 })
 
@@ -27,7 +27,7 @@ export async function DELETE(
 
     await prisma.empresa.delete({ where: { id } })
 
-    // Se o usuário não tiver mais nenhuma empresa, exclui o usuário também
+    // Se o usuário não tiver mais nenhuma empresa, exclui o registro de mapeamento
     const outrasEmpresas = await prisma.empresa.count({ where: { usuarioId: empresa.usuarioId } })
     let usuarioExcluido = false
     if (outrasEmpresas === 0) {
@@ -37,7 +37,7 @@ export async function DELETE(
 
     return NextResponse.json({
       ok: true,
-      empresa: empresa.nome,
+      empresaId: empresa.id,
       respostasExcluidas: respostas.count,
       relatoriosExcluidos: relatorios.count,
       usuarioExcluido,

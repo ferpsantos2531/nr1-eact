@@ -32,9 +32,12 @@ export async function GET() {
   const session = await getSession()
   if (!session?.isAdmin) return NextResponse.json({ error: "Acesso negado" }, { status: 403 })
 
+  // NOTA: No branch sso-integration, cidade/estado não ficam mais no banco NR-1.
+  // Esses dados estão no Conexão. A view geográfica requer integração adicional
+  // com a API do Conexão para enriquecer os dados. Por ora retorna vazio.
   const empresas = await prisma.empresa.findMany({
     select: {
-      id: true, nome: true, cidade: true, estado: true, tamanho: true,
+      id: true,
       relatorios: {
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -43,11 +46,12 @@ export async function GET() {
     },
   })
 
-  // Normaliza strings
+  // cidade/estado vêm do Conexão — por ora todos ficam sem geo
   const items = empresas.map(e => ({
     ...e,
-    uf: e.estado?.trim().toUpperCase() ?? null,
-    cidadeNorm: e.cidade ? toTitleCase(e.cidade.trim()) : null,
+    nome: `Empresa ${e.id.slice(0, 8)}`,
+    uf: null as string | null,
+    cidadeNorm: null as string | null,
     rel: e.relatorios[0] ?? null,
   }))
 
@@ -134,7 +138,7 @@ export async function GET() {
       const mediaGeral = acc.contMedia > 0 ? acc.somaMedia / acc.contMedia : null
       const total = acc.grave + acc.critico + acc.satisfatorio || 1
       return {
-        cidade: acc.cidade, uf: acc.uf, regiao: UF_REGIAO[acc.uf] ?? "Outros",
+        cidade: acc.cidade, uf: acc.uf, regiao: UF_REGIAO[acc.uf as string] ?? "Outros",
         totalEmpresas: acc.totalEmpresas, empresasComRelatorio: acc.comRelatorio,
         mediaGeral, categoria: mediaGeral !== null ? catFromMedia(mediaGeral) : null,
         distribuicao: { grave: acc.grave, critico: acc.critico, satisfatorio: acc.satisfatorio },
