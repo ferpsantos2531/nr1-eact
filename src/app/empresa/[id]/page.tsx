@@ -67,7 +67,8 @@ export default function EmpresaDashboard() {
     ]).then(([data, me]) => {
       if (data.error) { setErro(data.error); return }
       setEmpresa(data)
-      setSurveyUrl(`${window.location.origin}/pesquisa/${data.surveyToken}`)
+      const base = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+      setSurveyUrl(`${base}/pesquisa/${data.surveyToken}`)
       setIsAdmin(me.isAdmin === true)
     })
       .catch(() => setErro("Erro ao carregar dados"))
