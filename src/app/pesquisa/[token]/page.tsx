@@ -4,7 +4,9 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { QUESTOES, DIMENSOES } from "@/lib/questions"
 
-type EmpresaInfo = { id: string; nome: string; setor: string | null }
+// nome é opcional — vem do Conexão via proxy server-side
+// se o Conexão estiver indisponível, o questionário funciona sem exibir o nome
+type EmpresaInfo = { id: string; nome: string | null; setor?: string | null }
 
 const ESCALA = [
   { valor: 1, label: "Nunca" },
@@ -200,7 +202,9 @@ export default function PesquisaPage() {
         <div className="max-w-xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-xs font-medium" style={{ color: "#9f9f9f" }}>{empresa?.nome}</p>
+              {empresa?.nome && (
+                <p className="text-xs font-medium" style={{ color: "#9f9f9f" }}>{empresa.nome}</p>
+              )}
               <p className="text-sm font-bold" style={{ color: "#1a1a1a" }}>Avaliação NR-1 · Abrasel</p>
             </div>
             <div className="text-right">

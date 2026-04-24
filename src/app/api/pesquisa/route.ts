@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-// GET /api/pesquisa?token=xxx — busca dados da empresa pelo token
+const CONEXAO_API = process.env.CONEXAO_API_URL ?? "https://conexao.abrasel.com.br/perfil/api"
+
+/**
+ * GET /nr1/api/pesquisa?token=xxx
+ *
+ * Rota PÚBLICA — não requer autenticação.
+ * O questionário é preenchido por funcionários que não têm conta no sistema.
+ * Busca o nome da empresa no Conexão usando chamada server-side.
+ */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const token = searchParams.get("token")
@@ -23,7 +31,23 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    return NextResponse.json(empresa)
+    // Busca o nome da empresa no Conexão (chamada server-side sem sessão de usuário)
+    // O endpoint público /company/{id} retorna dados básicos da empresa
+    let nome: string | null = null
+    try {
+      const res = await fetch(`${CONEXAO_API}/company/${empresa.id}`, {
+        cache: "force-cache",    // Nome da empresa muda raramente — usa cache
+        next: { revalidate: 3600 },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        nome = data.tradingName || data.companyName || null
+      }
+    } catch {
+      // Conexão indisponível — questionário continua funcionando sem o nome
+    }
+
+    return NextResponse.json({ id: empresa.id, nome })
   } catch (error) {
     console.error("Erro ao buscar pesquisa:", error)
     return NextResponse.json({ error: "Erro interno" }, { status: 500 })
